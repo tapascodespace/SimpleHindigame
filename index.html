@@ -688,6 +688,24 @@
     box-shadow: 0 0 14px rgba(74, 230, 74, 0.2);
   }
 
+  .skip-mode-toggle {
+    background: #1a1209;
+    color: var(--sepia-light);
+    border: 1px solid var(--sepia);
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .skip-mode-toggle.active {
+    border-color: var(--red);
+    color: #ffb3ad;
+    box-shadow: 0 0 14px rgba(192, 57, 43, 0.24);
+  }
+
   /* ======= LOADING / THINKING ======= */
   .thinking-dots span {
     animation: thinking 1.2s ease-in-out infinite;
@@ -898,6 +916,7 @@
       Detective speaks in English<br>
       <span style="color:#2a1f0a">Auto-detect voice input + asset generation</span>
     </div>
+    <button class="skip-mode-toggle" id="skip-mode-toggle" onclick="toggleSkipMode()">SKIP DIALOGUE: OFF</button>
     <button class="long-mode-toggle" id="long-mode-toggle" onclick="toggleLongMode()">LONG MODE: OFF</button>
   </footer>
 
@@ -939,6 +958,10 @@ let nextAssetSlot = 0;
 let mapCanvas = null;
 let mapCtx = null;
 let placedAssets = [];
+let skipDialogueMode = false;
+let activeTypewriterState = null;
+let activeNarrationAudio = null;
+let activeNarrationCleanup = null;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -988,6 +1011,37 @@ function toggleLongMode() {
   if (!btn) return;
   btn.classList.toggle('active', longNarrationMode);
   btn.textContent = `LONG MODE: ${longNarrationMode ? 'ON' : 'OFF'}`;
+}
+
+function skipCurrentNarration() {
+  if (activeTypewriterState) {
+    clearInterval(activeTypewriterState.interval);
+    activeTypewriterState.element.textContent = activeTypewriterState.text;
+    activeTypewriterState.element.classList.remove('typing-cursor');
+    const resolver = activeTypewriterState.resolve;
+    activeTypewriterState = null;
+    resolver();
+  }
+
+  if (activeNarrationAudio && activeNarrationCleanup) {
+    try { activeNarrationAudio.pause(); } catch (_) {}
+    const cleanup = activeNarrationCleanup;
+    activeNarrationAudio = null;
+    activeNarrationCleanup = null;
+    cleanup();
+  }
+}
+
+function toggleSkipMode() {
+  skipDialogueMode = !skipDialogueMode;
+  const btn = document.getElementById('skip-mode-toggle');
+  if (!btn) return;
+  btn.classList.toggle('active', skipDialogueMode);
+  btn.textContent = `SKIP DIALOGUE: ${skipDialogueMode ? 'ON' : 'OFF'}`;
+
+  if (skipDialogueMode) {
+    skipCurrentNarration();
+  }
 }
 
 function initMapCanvas() {
@@ -1321,6 +1375,12 @@ function addToScene(role, text, className = '') {
 
 function typeText(element, text, speed = 28) {
   return new Promise(resolve => {
+    if (skipDialogueMode) {
+      element.textContent = text;
+      resolve();
+      return;
+    }
+
     element.classList.add('typing-cursor');
     element.textContent = '';
     let i = 0;
@@ -1329,9 +1389,17 @@ function typeText(element, text, speed = 28) {
       if (i >= text.length) {
         clearInterval(interval);
         element.classList.remove('typing-cursor');
+        activeTypewriterState = null;
         resolve();
       }
     }, speed);
+
+    activeTypewriterState = {
+      interval,
+      element,
+      text,
+      resolve
+    };
   });
 }
 
@@ -1484,6 +1552,11 @@ Return only the translated English sentence.`;
 //  TTS (Amazon Polly)
 // ============================================================
 async function speakText(text, targetEl = null) {
+  if (skipDialogueMode) {
+    if (targetEl) targetEl.textContent = text;
+    return;
+  }
+
   const response = await fetch('/api/tts', {
     method: 'POST',
     headers: {
@@ -1541,23 +1614,29 @@ async function speakText(text, targetEl = null) {
   return new Promise((resolve) => {
     const wave = document.getElementById('wave-container');
     wave.classList.add('active');
+
+    const finalize = () => {
+      wave.classList.remove('active');
+      clearHighlight();
+      URL.revokeObjectURL(url);
+      if (activeNarrationAudio === audio) {
+        activeNarrationAudio = null;
+        activeNarrationCleanup = null;
+      }
+      resolve();
+    };
+
+    activeNarrationAudio = audio;
+    activeNarrationCleanup = finalize;
+
     audio.onloadedmetadata = () => {
       if (targetEl && Number.isFinite(audio.duration) && audio.duration > 0) {
         startHighlight(audio.duration * 1000);
       }
     };
     audio.play();
-    audio.onended = () => {
-      wave.classList.remove('active');
-      clearHighlight();
-      URL.revokeObjectURL(url);
-      resolve();
-    };
-    audio.onerror = () => {
-      wave.classList.remove('active');
-      clearHighlight();
-      resolve();
-    };
+    audio.onended = finalize;
+    audio.onerror = finalize;
   });
 }
 
