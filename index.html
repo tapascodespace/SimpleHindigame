@@ -6,7 +6,7 @@
 <title>CASE FILE // Voice Detective</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@300;400;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -21,12 +21,16 @@
     --green: #2d6a2d;
     --smoke: rgba(26,18,9,0.85);
     --glow: 0 0 20px rgba(196,154,42,0.3);
+    --font-display: 'Bebas Neue', 'Space Grotesk', sans-serif;
+    --font-ui: 'Inter', sans-serif;
+    --text-bright: #f8f2de;
+    --text-mid: #ecd9a8;
   }
 
   html, body {
     height: 100%;
     background: var(--ink);
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-ui);
     overflow: hidden;
   }
 
@@ -84,7 +88,7 @@
   }
 
   .case-stamp {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 11px;
     letter-spacing: 4px;
     color: var(--sepia);
@@ -92,7 +96,7 @@
   }
 
   .setup-title {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 42px;
     color: var(--ink);
     line-height: 1;
@@ -100,7 +104,7 @@
   }
 
   .setup-sub {
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 12px;
     color: var(--sepia);
     margin-bottom: 32px;
@@ -141,7 +145,7 @@
     background: var(--ink);
     color: var(--sepia-light);
     border: 2px solid var(--sepia);
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 16px;
     letter-spacing: 3px;
     padding: 14px;
@@ -160,9 +164,9 @@
   .start-btn:active { transform: translateY(1px); }
 
   .setup-hint {
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 11px;
-    color: #8a7040;
+    color: #a58a56;
     margin-top: 16px;
     text-align: center;
     line-height: 1.6;
@@ -200,7 +204,7 @@
   }
 
   .header-title {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     color: var(--sepia-light);
     font-size: 20px;
     letter-spacing: 4px;
@@ -222,14 +226,14 @@
   }
 
   .header-case {
-    font-family: 'Courier Prime', monospace;
-    color: var(--sepia);
+    font-family: var(--font-ui);
+    color: var(--text-mid);
     font-size: 12px;
     letter-spacing: 2px;
   }
 
   .header-lang {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-ui);
     font-size: 12px;
     color: var(--green);
     letter-spacing: 2px;
@@ -247,7 +251,7 @@
     background: transparent;
     color: var(--sepia-light);
     border: 1px solid var(--sepia);
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 10px;
     letter-spacing: 2px;
     padding: 5px 10px;
@@ -272,7 +276,7 @@
   }
 
   .panel-header {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 11px;
     letter-spacing: 3px;
     color: var(--sepia);
@@ -287,9 +291,9 @@
     border-left: 3px solid var(--sepia);
     padding: 12px;
     margin-bottom: 12px;
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 12px;
-    color: #a0845a;
+    color: var(--text-mid);
     line-height: 1.6;
     animation: slide-in 0.4s ease;
   }
@@ -337,7 +341,7 @@
   }
 
   .scene-role {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 11px;
     letter-spacing: 3px;
     margin-bottom: 8px;
@@ -348,17 +352,30 @@
   .scene-role.system { color: var(--red); }
 
   .scene-text {
-    font-family: 'Courier Prime', monospace;
-    font-size: 14px;
+    font-family: var(--font-ui);
+    font-size: 15px;
     line-height: 1.9;
-    color: var(--paper-dark);
+    color: var(--text-bright);
     max-width: 680px;
+    font-weight: 500;
   }
 
   .scene-text.hindi {
-    color: #7ab87a;
+    color: #9be39b;
     font-style: italic;
     font-size: 13px;
+  }
+
+  .spoken-word {
+    transition: color 0.12s ease, text-shadow 0.12s ease, background 0.12s ease;
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  .spoken-word.active {
+    color: #fffbd0;
+    text-shadow: 0 0 14px rgba(255, 247, 190, 0.8);
+    background: rgba(255, 247, 190, 0.14);
   }
 
   /* Typewriter cursor */
@@ -414,14 +431,14 @@
   }
 
   .suspect-name {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 13px;
     color: var(--paper-dark);
     margin-bottom: 4px;
   }
 
   .suspect-status {
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 11px;
     letter-spacing: 1px;
   }
@@ -496,7 +513,7 @@
   }
 
   .voice-status-label {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 11px;
     letter-spacing: 3px;
     color: var(--sepia);
@@ -504,9 +521,9 @@
   }
 
   .voice-transcript {
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 13px;
-    color: #7ab87a;
+    color: #b7f5b7;
     min-height: 20px;
     font-style: italic;
   }
@@ -514,7 +531,7 @@
   .voice-transcript.error { color: var(--red); }
 
   .voice-hint {
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 11px;
     color: #4a3820;
     text-align: right;
@@ -556,7 +573,7 @@
   }
 
   .outcome-title {
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 48px;
     color: var(--sepia-light);
     letter-spacing: 6px;
@@ -564,7 +581,7 @@
   }
 
   .outcome-sub {
-    font-family: 'Courier Prime', monospace;
+    font-family: var(--font-ui);
     font-size: 14px;
     color: var(--paper-dark);
     line-height: 1.9;
@@ -575,7 +592,7 @@
     background: transparent;
     color: var(--sepia-light);
     border: 2px solid var(--sepia);
-    font-family: 'Special Elite', serif;
+    font-family: var(--font-display);
     font-size: 14px;
     letter-spacing: 3px;
     padding: 12px 32px;
@@ -938,6 +955,16 @@ function escapeHtml(text) {
     .replace(/'/g, '&#39;');
 }
 
+function highlightWords(targetEl, words, activeIndex) {
+  if (!targetEl || !Array.isArray(words) || words.length === 0) return;
+  targetEl.innerHTML = words
+    .map((word, index) => {
+      const activeClass = index === activeIndex ? 'spoken-word active' : 'spoken-word';
+      return `<span class="${activeClass}">${escapeHtml(word)}</span>`;
+    })
+    .join(' ');
+}
+
 function openStoryJournal() {
   const win = window.open('', '_blank');
   if (!win) {
@@ -1028,7 +1055,7 @@ Return only the translated English sentence.`;
 // ============================================================
 //  ELEVENLABS TTS
 // ============================================================
-async function speakText(text) {
+async function speakText(text, targetEl = null) {
   const response = await fetch('/api/tts', {
     method: 'POST',
     headers: {
@@ -1054,17 +1081,55 @@ async function speakText(text) {
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
+  const words = text.split(/\s+/).filter(Boolean);
+  let activeWordIndex = 0;
+  let highlightInterval = null;
+
+  const clearHighlight = () => {
+    if (highlightInterval) {
+      clearInterval(highlightInterval);
+      highlightInterval = null;
+    }
+    if (targetEl) targetEl.textContent = text;
+  };
+
+  const startHighlight = (durationMs) => {
+    if (!targetEl || words.length < 2) return;
+    if (highlightInterval) clearInterval(highlightInterval);
+    const stepMs = Math.max(80, Math.floor(durationMs / words.length));
+    activeWordIndex = 0;
+    highlightWords(targetEl, words, activeWordIndex);
+    highlightInterval = setInterval(() => {
+      activeWordIndex = Math.min(activeWordIndex + 1, words.length - 1);
+      highlightWords(targetEl, words, activeWordIndex);
+    }, stepMs);
+  };
+
+  if (targetEl && words.length >= 2) {
+    const estimatedDurationMs = Math.max(1200, words.length * 220);
+    startHighlight(estimatedDurationMs);
+  }
 
   return new Promise((resolve) => {
     const wave = document.getElementById('wave-container');
     wave.classList.add('active');
+    audio.onloadedmetadata = () => {
+      if (targetEl && Number.isFinite(audio.duration) && audio.duration > 0) {
+        startHighlight(audio.duration * 1000);
+      }
+    };
     audio.play();
     audio.onended = () => {
       wave.classList.remove('active');
+      clearHighlight();
       URL.revokeObjectURL(url);
       resolve();
     };
-    audio.onerror = () => { wave.classList.remove('active'); resolve(); };
+    audio.onerror = () => {
+      wave.classList.remove('active');
+      clearHighlight();
+      resolve();
+    };
   });
 }
 
@@ -1079,7 +1144,7 @@ async function openingMonologue() {
   turnCount++;
 
   try {
-    await speakText(opening);
+    await speakText(opening, el);
     await promptLanguageChoice();
   } catch(e) {
     console.error('TTS error:', e);
@@ -1093,8 +1158,8 @@ async function promptLanguageChoice() {
   document.getElementById('voice-label').textContent = '// LANGUAGE CHECK: ENGLISH OR HINDI';
   document.getElementById('voice-transcript').textContent = 'Say: English or Hindi';
   const prompt = 'Do you want to respond in English or Hindi? Say English or Hindi.';
-  addToScene('system', prompt);
-  await speakText(prompt);
+  const promptEl = addToScene('system', prompt);
+  await speakText(prompt, promptEl);
 }
 
 // ============================================================
@@ -1182,8 +1247,8 @@ function setRecognitionLanguage(lang) {
 
 function detectLanguageChoice(text) {
   const normalized = text.toLowerCase();
-  const wantsEnglish = /english|inglish|अंग्रेज|इंग्लिश/.test(normalized);
-  const wantsHindi = /hindi|hindee|हिंदी|हिन्दी/.test(normalized);
+  const wantsEnglish = /english|englis|inglish|अंग्रेज|इंग्लिश|एंग्लिश/.test(normalized);
+  const wantsHindi = /hindi|hindee|hind|हिंदी|हिन्दी/.test(normalized);
   if (wantsEnglish) return 'english';
   if (wantsHindi) return 'hindi';
   return null;
@@ -1195,7 +1260,19 @@ function isLikelyHindi(text) {
 
 async function handleRecognizedSpeech(transcript) {
   if (awaitingLanguageChoice) {
-    const selected = detectLanguageChoice(transcript);
+    let selected = detectLanguageChoice(transcript);
+    if (!selected && transcript.trim()) {
+      selected = isLikelyHindi(transcript) ? 'hindi' : 'english';
+      addToScene('system', `Auto-selected ${selected.toUpperCase()} from your speech.`);
+      preferredInputLanguage = selected;
+      awaitingLanguageChoice = false;
+      setRecognitionLanguage(selected);
+      document.getElementById('header-lang').textContent = `INPUT: ${selected.toUpperCase()}`;
+      document.getElementById('voice-label').textContent = `// PROCESSING ${selected.toUpperCase()} INPUT`;
+      await processPlayerInput(transcript, selected);
+      return;
+    }
+
     if (!selected) {
       addToScene('system', 'Could not detect language choice. Please say English or Hindi.');
       document.getElementById('voice-label').textContent = '// SAY: ENGLISH OR HINDI';
@@ -1283,11 +1360,11 @@ async function processPlayerInput(rawText, selectedLanguage) {
     }
 
     // Speak the reply
-    await speakText(reply);
+    await speakText(reply, thinkEl);
     await promptLanguageChoice();
 
   } catch (err) {
-    thinkEl.textContent = `⚠ Error: ${err.message}. Check your API keys.`;
+    thinkEl.textContent = `⚠ Error: ${err.message}. Check server environment variables.`;
     thinkEl.style.color = 'var(--red)';
     console.error(err);
   }
