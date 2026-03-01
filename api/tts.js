@@ -1,52 +1,47 @@
+const { PollyClient, SynthesizeSpeechCommand } = require('@aws-sdk/client-polly');
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Missing ELEVENLABS_API_KEY environment variable' });
-  }
+  const region = process.env.AWS_REGION || process.env.POLLY_AWS_REGION || 'ap-south-1';
+  const voiceId = process.env.POLLY_VOICE_ID || 'Aditi';
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const voiceId = body.voiceId || 'ErXwobaYiN019PkySvjV';
+    const text = String(body?.text || '').trim();
 
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: {
-        'xi-api-key': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        text: body.text || '',
-        model_id: body.model_id || 'eleven_monolingual_v1',
-        voice_settings: body.voice_settings || {
-          stability: 0.65,
-          similarity_boost: 0.85,
-          style: 0.3,
-          use_speaker_boost: true
-        }
-      })
-    });
-
-    if (!response.ok) {
-      let message = 'ElevenLabs request failed';
-      try {
-        const errData = await response.json();
-        message = errData?.detail?.message || message;
-      } catch (_) {}
-      return res.status(response.status).json({ error: message });
+    if (!text) {
+      return res.status(400).json({ error: 'text is required' });
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = Buffer.from(arrayBuffer);
+    const polly = new PollyClient({ region });
+    const command = new SynthesizeSpeechCommand({
+      Engine: 'neural',
+      OutputFormat: 'mp3',
+      VoiceId: voiceId,
+      LanguageCode: 'hi-IN',
+      Text: text,
+      TextType: body?.textType === 'ssml' ? 'ssml' : 'text'
+    });
+
+    const response = await polly.send(command);
+    if (!response.AudioStream) {
+      return res.status(500).json({ error: 'Polly did not return audio' });
+    }
+
+    const chunks = [];
+    for await (const chunk of response.AudioStream) {
+      chunks.push(Buffer.from(chunk));
+    }
+    const audioBuffer = Buffer.concat(chunks);
 
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).send(audioBuffer);
   } catch (error) {
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    return res.status(500).json({ error: error.message || 'Polly request failed' });
   }
 };

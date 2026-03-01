@@ -1009,7 +1009,7 @@ ${entries || '<div class="empty">No entries yet. Start the investigation first.<
 }
 
 // ============================================================
-//  CLAUDE API
+//  LLM API (Bedrock / Mistral)
 // ============================================================
 async function callClaude(systemPrompt, messages, maxTokens = 300) {
   const response = await fetch('/api/claude', {
@@ -1027,7 +1027,7 @@ async function callClaude(systemPrompt, messages, maxTokens = 300) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Claude API error: ${response.status}`);
+    throw new Error(errorData.error || `LLM API error: ${response.status}`);
   }
   const data = await response.json();
   return data.text || '';
@@ -1059,7 +1059,7 @@ Return only the translated English sentence.`;
 }
 
 // ============================================================
-//  ELEVENLABS TTS
+//  TTS (Amazon Polly)
 // ============================================================
 async function speakText(text, targetEl = null) {
   const response = await fetch('/api/tts', {
@@ -1082,7 +1082,7 @@ async function speakText(text, targetEl = null) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `ElevenLabs error: ${response.status}`);
+    throw new Error(errorData.error || `TTS error: ${response.status}`);
   }
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
