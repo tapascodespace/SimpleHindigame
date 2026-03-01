@@ -12,6 +12,7 @@ A single-page noir detective game with:
 2. Import the repo in Vercel.
 3. In Vercel Project Settings → Environment Variables, add:
    - `MISTRAL_API_KEY` (preferred if you want simple key-based Mistral access)
+  - or `AWS_BEARER_TOKEN_BEDROCK` (supported alias for your bearer-style Bedrock key)
    - OR Bedrock credentials:
      - `AWS_ACCESS_KEY_ID`
      - `AWS_SECRET_ACCESS_KEY`

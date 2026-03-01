@@ -23,7 +23,11 @@ module.exports = async function handler(req, res) {
 
   const region = process.env.AWS_REGION || process.env.BEDROCK_AWS_REGION || 'us-east-1';
   const bedrockModelId = process.env.BEDROCK_MODEL_ID || 'mistral.mistral-large-2407-v1:0';
-  const mistralApiKey = process.env.MISTRAL_API_KEY || process.env.BEDROCK_API_KEY || '';
+  const mistralApiKey =
+    process.env.MISTRAL_API_KEY ||
+    process.env.BEDROCK_API_KEY ||
+    process.env.AWS_BEARER_TOKEN_BEDROCK ||
+    '';
   const mistralApiModel = process.env.MISTRAL_MODEL || 'mistral-large-latest';
 
   try {
