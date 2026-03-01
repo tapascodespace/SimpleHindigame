@@ -592,6 +592,26 @@
     cursor: pointer;
   }
 
+  .asset-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .asset-refine {
+    width: 100%;
+    background: #120d06;
+    color: var(--text-mid);
+    border: 1px solid #2a1f0a;
+    padding: 5px;
+    font-size: 10px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+  }
+
+  .asset-refine:disabled { opacity: 0.4; cursor: not-allowed; }
+
   .asset-apply:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* FOOTER — Voice Control */
@@ -879,19 +899,31 @@
     <div class="asset-grid" id="asset-grid">
       <div class="asset-slot">
         <img class="asset-thumb" id="asset-thumb-0" alt="Generated asset 1">
-        <button class="asset-apply" id="asset-apply-0" onclick="applyAssetSlot(0)" disabled>Apply</button>
+        <div class="asset-actions">
+          <button class="asset-apply" id="asset-apply-0" onclick="applyAssetSlot(0)" disabled>Apply</button>
+          <button class="asset-refine" id="asset-refine-0" onclick="refineAssetSlot(0)" disabled>Refine</button>
+        </div>
       </div>
       <div class="asset-slot">
         <img class="asset-thumb" id="asset-thumb-1" alt="Generated asset 2">
-        <button class="asset-apply" id="asset-apply-1" onclick="applyAssetSlot(1)" disabled>Apply</button>
+        <div class="asset-actions">
+          <button class="asset-apply" id="asset-apply-1" onclick="applyAssetSlot(1)" disabled>Apply</button>
+          <button class="asset-refine" id="asset-refine-1" onclick="refineAssetSlot(1)" disabled>Refine</button>
+        </div>
       </div>
       <div class="asset-slot">
         <img class="asset-thumb" id="asset-thumb-2" alt="Generated asset 3">
-        <button class="asset-apply" id="asset-apply-2" onclick="applyAssetSlot(2)" disabled>Apply</button>
+        <div class="asset-actions">
+          <button class="asset-apply" id="asset-apply-2" onclick="applyAssetSlot(2)" disabled>Apply</button>
+          <button class="asset-refine" id="asset-refine-2" onclick="refineAssetSlot(2)" disabled>Refine</button>
+        </div>
       </div>
       <div class="asset-slot">
         <img class="asset-thumb" id="asset-thumb-3" alt="Generated asset 4">
-        <button class="asset-apply" id="asset-apply-3" onclick="applyAssetSlot(3)" disabled>Apply</button>
+        <div class="asset-actions">
+          <button class="asset-apply" id="asset-apply-3" onclick="applyAssetSlot(3)" disabled>Apply</button>
+          <button class="asset-refine" id="asset-refine-3" onclick="refineAssetSlot(3)" disabled>Refine</button>
+        </div>
       </div>
     </div>
     <div class="panel-header" style="margin-top:18px;">// SUSPECTS</div>
@@ -958,6 +990,7 @@ let nextAssetSlot = 0;
 let mapCanvas = null;
 let mapCtx = null;
 let placedAssets = [];
+let assetCache = {};
 let skipDialogueMode = false;
 let activeTypewriterState = null;
 let activeNarrationAudio = null;
@@ -965,6 +998,7 @@ let activeNarrationCleanup = null;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
+const ASSET_CACHE_KEY = 'voice_detective_asset_cache_v1';
 const CASE_SCENARIO = `You are a world-weary noir detective in 1930s Jaipur, India. 
 The case: The legendary "Star of Jaipur" — a priceless jeweled pendant — has vanished from the Maharaja's locked vault overnight.
 Three suspects, all present at last night's palace dinner:
@@ -1004,6 +1038,37 @@ const SUSPECTS = [
 let evidenceCount = 1;
 
 loadJournal();
+loadAssetCache();
+
+function loadAssetCache() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ASSET_CACHE_KEY) || '{}');
+    assetCache = parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    assetCache = {};
+  }
+}
+
+function saveAssetCache() {
+  const entries = Object.entries(assetCache)
+    .sort((a, b) => (b[1]?.at || 0) - (a[1]?.at || 0))
+    .slice(0, 80);
+  assetCache = Object.fromEntries(entries);
+  localStorage.setItem(ASSET_CACHE_KEY, JSON.stringify(assetCache));
+}
+
+function makeAssetCacheKey(prompt, style, size) {
+  return `${style}|${size}|${String(prompt || '').trim().toLowerCase()}`;
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 function toggleLongMode() {
   longNarrationMode = !longNarrationMode;
@@ -1083,8 +1148,10 @@ function initAssetSlots() {
   for (let i = 0; i < 4; i++) {
     const thumb = document.getElementById(`asset-thumb-${i}`);
     const applyBtn = document.getElementById(`asset-apply-${i}`);
+    const refineBtn = document.getElementById(`asset-refine-${i}`);
     if (thumb) thumb.src = '';
     if (applyBtn) applyBtn.disabled = true;
+    if (refineBtn) refineBtn.disabled = true;
   }
 }
 
@@ -1123,6 +1190,7 @@ function setAssetSlot(index, url, prompt) {
   generatedAssets[index] = { url, prompt };
   const thumb = document.getElementById(`asset-thumb-${index}`);
   const applyBtn = document.getElementById(`asset-apply-${index}`);
+  const refineBtn = document.getElementById(`asset-refine-${index}`);
   if (thumb) {
     thumb.src = url;
     thumb.title = prompt;
@@ -1130,13 +1198,23 @@ function setAssetSlot(index, url, prompt) {
   if (applyBtn) {
     applyBtn.disabled = !url;
   }
+  if (refineBtn) {
+    refineBtn.disabled = !url;
+  }
 }
 
 async function generateAssetAndAddToPanel(assetPrompt) {
   if (!assetPrompt) return;
   const { style, size } = getAssetControls();
+  const cacheKey = makeAssetCacheKey(assetPrompt, style, size);
   const slotIndex = nextAssetSlot % 4;
   nextAssetSlot += 1;
+
+  if (assetCache[cacheKey]?.url) {
+    setAssetSlot(slotIndex, assetCache[cacheKey].url, assetPrompt);
+    return;
+  }
+
   setAssetSpinner(true);
 
   try {
@@ -1155,15 +1233,26 @@ async function generateAssetAndAddToPanel(assetPrompt) {
     if (!blob || blob.size < 128) {
       throw new Error('Generated image was empty or too small');
     }
-    const url = URL.createObjectURL(blob);
+    const url = await blobToDataUrl(blob);
+    assetCache[cacheKey] = { url, prompt: assetPrompt, at: Date.now() };
+    saveAssetCache();
     setAssetSlot(slotIndex, url, assetPrompt);
   } catch (error) {
     logVoiceEvent('system', 'Asset generation fallback used', error.message || 'Unknown generation error');
     const fallbackUrl = createFallbackAsset(assetPrompt, size);
+    assetCache[cacheKey] = { url: fallbackUrl, prompt: assetPrompt, at: Date.now() };
+    saveAssetCache();
     setAssetSlot(slotIndex, fallbackUrl, `${assetPrompt} (fallback)`);
   } finally {
     setAssetSpinner(false);
   }
+}
+
+async function refineAssetSlot(index) {
+  const asset = generatedAssets[index];
+  if (!asset?.prompt) return;
+  const refinedPrompt = `${asset.prompt}. refine: darker noir lighting, cleaner silhouette, stronger pixel edges.`;
+  await generateAssetAndAddToPanel(refinedPrompt);
 }
 
 function applyAssetSlot(index) {
