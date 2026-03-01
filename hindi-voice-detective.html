@@ -713,7 +713,6 @@ let preferredInputLanguage = 'hindi';
 let awaitingLanguageChoice = false;
 let storyJournal = [];
 let recognitionNetworkRetryCount = 0;
-let lastRecognitionNetworkLogAt = 0;
 let mediaRecorder = null;
 let mediaStream = null;
 let mediaChunks = [];
@@ -1351,27 +1350,22 @@ function initRecognition() {
       const insecureContext = location.protocol === 'file:' || (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1');
       if (insecureContext) {
         transcriptEl.textContent = 'Speech recognition needs HTTPS or localhost. Open this app via localhost/https.';
+      } else if (canUseFallbackSTT()) {
+        transcriptEl.textContent = 'Speech recognition network issue. Switching to backup STT...';
+        stopRecording();
+        setTimeout(() => {
+          if (!isRecording) startFallbackRecording();
+        }, 300);
+        return;
       } else if (recognitionNetworkRetryCount < 1) {
         recognitionNetworkRetryCount += 1;
         transcriptEl.textContent = 'Network issue detected. Retrying mic automatically...';
-        if (Date.now() - lastRecognitionNetworkLogAt > 3000) {
-          addToScene('system', '⚠ Speech recognition network issue. Auto-retrying once.');
-          lastRecognitionNetworkLogAt = Date.now();
-        }
         stopRecording();
         setTimeout(() => {
           if (!isRecording) startRecording(true);
         }, 700);
         return;
       } else {
-        if (canUseFallbackSTT()) {
-          transcriptEl.textContent = 'Speech recognition network issue. Switching to backup STT...';
-          stopRecording();
-          setTimeout(() => {
-            if (!isRecording) startFallbackRecording();
-          }, 300);
-          return;
-        }
         transcriptEl.textContent = 'Network issue while recognizing speech. Check internet and click mic again.';
       }
     } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
