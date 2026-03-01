@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASE FILE // Voice Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@300;400;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1209;
+    --paper: #f0e6c8;
+    --paper-dark: #d4c49a;
+    --sepia: #8b6914;
+    --sepia-light: #c49a2a;
+    --red: #c0392b;
+    --red-dim: #7a1f14;
+    --green: #2d6a2d;
+    --smoke: rgba(26,18,9,0.85);
+    --glow: 0 0 20px rgba(196,154,42,0.3);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--ink);
+    font-family: 'Rajdhani', sans-serif;
+    overflow: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* Rain overlay */
+  #rain-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.15;
+  }
+
+  /* ======= SETUP SCREEN ======= */
+  #setup-screen {
+    position: fixed; inset: 0;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    transition: opacity 0.8s ease;
+  }
+
+  .setup-card {
+    background: var(--paper);
+    border: 3px solid var(--sepia);
+    border-radius: 2px;
+    padding: 48px;
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    box-shadow: 8px 8px 0 rgba(0,0,0,0.5), var(--glow);
+  }
+
+  .setup-card::before {
+    content: 'CLASSIFIED';
+    position: absolute;
+    top: 16px; right: 16px;
+    color: var(--red);
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    border: 1px solid var(--red);
+    padding: 2px 6px;
+    transform: rotate(3deg);
+  }
+
+  .case-stamp {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--sepia);
+    margin-bottom: 8px;
+  }
+
+  .setup-title {
+    font-family: 'Special Elite', serif;
+    font-size: 42px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .setup-sub {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--sepia);
+    margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .input-label {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--sepia);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .api-input {
+    width: 100%;
+    background: var(--ink);
+    border: 2px solid var(--sepia);
+    color: var(--sepia-light);
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    padding: 12px 16px;
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .api-input:focus {
+    border-color: var(--sepia-light);
+    box-shadow: var(--glow);
+  }
+
+  .api-input::placeholder { color: #5a4a2a; }
+
+  .start-btn {
+    width: 100%;
+    background: var(--ink);
+    color: var(--sepia-light);
+    border: 2px solid var(--sepia);
+    font-family: 'Special Elite', serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .start-btn:hover {
+    background: var(--sepia);
+    color: var(--ink);
+    box-shadow: var(--glow);
+  }
+
+  .start-btn:active { transform: translateY(1px); }
+
+  .setup-hint {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: #8a7040;
+    margin-top: 16px;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ======= MAIN GAME ======= */
+  #game-screen {
+    display: none;
+    height: 100vh;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 280px 1fr 240px;
+    grid-template-areas:
+      "header header header"
+      "evidence story clues"
+      "footer footer footer";
+    gap: 0;
+  }
+
+  #game-screen.active {
+    display: grid;
+  }
+
+  /* HEADER */
+  .game-header {
+    grid-area: header;
+    background: var(--ink);
+    border-bottom: 2px solid var(--sepia);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .header-title {
+    font-family: 'Special Elite', serif;
+    color: var(--sepia-light);
+    font-size: 20px;
+    letter-spacing: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-dot {
+    width: 8px; height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse-red 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(192,57,43,0.6); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(192,57,43,0); }
+  }
+
+  .header-case {
+    font-family: 'Courier Prime', monospace;
+    color: var(--sepia);
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .header-lang {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    color: var(--green);
+    letter-spacing: 2px;
+    border: 1px solid var(--green);
+    padding: 3px 10px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .journal-btn {
+    background: transparent;
+    color: var(--sepia-light);
+    border: 1px solid var(--sepia);
+    font-family: 'Special Elite', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .journal-btn:hover {
+    border-color: var(--sepia-light);
+    box-shadow: var(--glow);
+  }
+
+  /* EVIDENCE PANEL */
+  .evidence-panel {
+    grid-area: evidence;
+    background: #120d06;
+    border-right: 2px solid var(--sepia);
+    padding: 24px 20px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sepia) transparent;
+  }
+
+  .panel-header {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--sepia);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #2a1f0a;
+  }
+
+  .evidence-item {
+    background: #1a1209;
+    border: 1px solid #2a1f0a;
+    border-left: 3px solid var(--sepia);
+    padding: 12px;
+    margin-bottom: 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: #a0845a;
+    line-height: 1.6;
+    animation: slide-in 0.4s ease;
+  }
+
+  .evidence-item.new { border-left-color: var(--sepia-light); color: var(--paper-dark); }
+
+  .evidence-tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--sepia);
+    margin-bottom: 4px;
+  }
+
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* STORY PANEL */
+  .story-panel {
+    grid-area: story;
+    background: #0e0a04;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .story-scene {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sepia) transparent;
+  }
+
+  .scene-entry {
+    margin-bottom: 28px;
+    animation: fade-up 0.5s ease;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .scene-role {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .scene-role.detective { color: var(--sepia-light); }
+  .scene-role.player { color: var(--green); }
+  .scene-role.system { color: var(--red); }
+
+  .scene-text {
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--paper-dark);
+    max-width: 680px;
+  }
+
+  .scene-text.hindi {
+    color: #7ab87a;
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* Typewriter cursor */
+  .typing-cursor::after {
+    content: '█';
+    animation: blink 0.8s step-end infinite;
+    color: var(--sepia-light);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Speaking waveform */
+  .wave-container {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 16px 32px;
+    background: #0e0a04;
+    border-top: 1px solid #1a1209;
+  }
+
+  .wave-container.active { display: flex; }
+
+  .wave-bar {
+    width: 3px;
+    background: var(--sepia-light);
+    border-radius: 2px;
+    animation: wave-anim 0.8s ease-in-out infinite;
+  }
+
+  @keyframes wave-anim {
+    0%, 100% { height: 4px; opacity: 0.4; }
+    50% { height: 28px; opacity: 1; }
+  }
+
+  /* CLUES PANEL */
+  .clues-panel {
+    grid-area: clues;
+    background: #120d06;
+    border-left: 2px solid var(--sepia);
+    padding: 24px 20px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sepia) transparent;
+  }
+
+  .suspect-card {
+    background: #1a1209;
+    border: 1px solid #2a1f0a;
+    padding: 12px;
+    margin-bottom: 12px;
+    animation: slide-in 0.4s ease;
+  }
+
+  .suspect-name {
+    font-family: 'Special Elite', serif;
+    font-size: 13px;
+    color: var(--paper-dark);
+    margin-bottom: 4px;
+  }
+
+  .suspect-status {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .suspect-status.clear { color: var(--green); }
+  .suspect-status.suspect { color: var(--sepia-light); }
+  .suspect-status.guilty { color: var(--red); }
+
+  .guilt-bar {
+    height: 2px;
+    background: #2a1f0a;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .guilt-fill {
+    height: 100%;
+    background: var(--sepia-light);
+    transition: width 1s ease;
+  }
+
+  .guilt-fill.high { background: var(--red); }
+
+  /* FOOTER — Voice Control */
+  .game-footer {
+    grid-area: footer;
+    background: var(--ink);
+    border-top: 2px solid var(--sepia);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 80px;
+  }
+
+  .voice-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #1a1209;
+    border: 2px solid var(--sepia);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .voice-btn:hover { border-color: var(--sepia-light); box-shadow: var(--glow); }
+
+  .voice-btn.recording {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.15);
+    animation: recording-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes recording-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(192,57,43,0); }
+  }
+
+  .mic-icon {
+    width: 20px; height: 20px;
+    color: var(--sepia-light);
+  }
+
+  .voice-btn.recording .mic-icon { color: var(--red); }
+
+  .voice-status {
+    flex: 1;
+  }
+
+  .voice-status-label {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--sepia);
+    margin-bottom: 4px;
+  }
+
+  .voice-transcript {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    color: #7ab87a;
+    min-height: 20px;
+    font-style: italic;
+  }
+
+  .voice-transcript.error { color: var(--red); }
+
+  .voice-hint {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: #4a3820;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* ======= LOADING / THINKING ======= */
+  .thinking-dots span {
+    animation: thinking 1.2s ease-in-out infinite;
+    display: inline-block;
+    color: var(--sepia-light);
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinking {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ======= OVERLAY / WIN ======= */
+  #outcome-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,7,2,0.95);
+    z-index: 600;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #outcome-overlay.active { display: flex; }
+
+  .outcome-card {
+    text-align: center;
+    padding: 60px;
+    border: 3px solid var(--sepia);
+    background: #0e0a04;
+    max-width: 480px;
+    box-shadow: var(--glow);
+  }
+
+  .outcome-title {
+    font-family: 'Special Elite', serif;
+    font-size: 48px;
+    color: var(--sepia-light);
+    letter-spacing: 6px;
+    margin-bottom: 12px;
+  }
+
+  .outcome-sub {
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    color: var(--paper-dark);
+    line-height: 1.9;
+    margin-bottom: 32px;
+  }
+
+  .play-again-btn {
+    background: transparent;
+    color: var(--sepia-light);
+    border: 2px solid var(--sepia);
+    font-family: 'Special Elite', serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    padding: 12px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .play-again-btn:hover {
+    background: var(--sepia);
+    color: var(--ink);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--sepia); }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    #game-screen.active {
+      grid-template-columns: 1fr;
+      grid-template-rows: 60px 1fr auto 80px;
+      grid-template-areas: "header" "story" "clues" "footer";
+    }
+    .evidence-panel { display: none; }
+    .clues-panel { max-height: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="rain-canvas"></canvas>
+
+<!-- ===== SETUP SCREEN ===== -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="case-stamp">DETECTIVE AGENCY // CASE FILE</div>
+    <div class="setup-title">VOICE<br>DETECTIVE</div>
+    <div class="setup-sub">Speak in Hindi. Unravel the mystery.</div>
+
+    <button class="start-btn" onclick="startGame()">▶ OPEN CASE FILE</button>
+    <div class="setup-hint">
+      No client-side API keys required.<br>
+      Speak in <strong>Hindi or English</strong> — the detective responds in English.
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen">
+
+  <!-- Header -->
+  <header class="game-header">
+    <div class="header-title">
+      <div class="header-dot"></div>
+      CASE FILE
+    </div>
+    <div class="header-case" id="case-title">THE MAHARAJA'S MISSING JEWEL</div>
+    <div class="header-actions">
+      <button class="journal-btn" onclick="openStoryJournal()">OPEN JOURNAL</button>
+      <div class="header-lang" id="header-lang">INPUT: HINDI</div>
+    </div>
+  </header>
+
+  <!-- Evidence Panel -->
+  <aside class="evidence-panel">
+    <div class="panel-header">// EVIDENCE LOG</div>
+    <div id="evidence-list">
+      <div class="evidence-item new">
+        <div class="evidence-tag">EXHIBIT A</div>
+        A jeweled pendant — the Star of Jaipur — has vanished from the Maharaja's locked vault.
+      </div>
+    </div>
+  </aside>
+
+  <!-- Story Center -->
+  <main class="story-panel">
+    <div class="story-scene" id="story-scene"></div>
+    <div class="wave-container" id="wave-container">
+      <!-- wave bars injected by JS -->
+    </div>
+  </main>
+
+  <!-- Suspects Panel -->
+  <aside class="clues-panel">
+    <div class="panel-header">// SUSPECTS</div>
+    <div id="suspects-list"></div>
+  </aside>
+
+  <!-- Footer — Voice -->
+  <footer class="game-footer">
+    <button class="voice-btn" id="voice-btn" onclick="toggleRecording()" title="Hold to speak">
+      <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+    </button>
+    <div class="voice-status">
+      <div class="voice-status-label" id="voice-label">// READY: CHOOSE LANGUAGE EACH TURN</div>
+      <div class="voice-transcript" id="voice-transcript">The detective will ask: English or Hindi?</div>
+    </div>
+    <div class="voice-hint">
+      Detective speaks in English<br>
+      <span style="color:#2a1f0a">You can answer in English or Hindi</span>
+    </div>
+  </footer>
+
+</div>
+
+<!-- Outcome Overlay -->
+<div id="outcome-overlay">
+  <div class="outcome-card">
+    <div class="outcome-title" id="outcome-title">CASE CLOSED</div>
+    <div class="outcome-sub" id="outcome-text"></div>
+    <button class="play-again-btn" onclick="resetGame()">▶ NEW CASE</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  CONFIG & STATE
+// ============================================================
+let isRecording = false;
+let recognition = null;
+let conversationHistory = [];
+let audioQueue = [];
+let isPlaying = false;
+let turnCount = 0;
+let preferredInputLanguage = 'hindi';
+let awaitingLanguageChoice = false;
+let storyJournal = [];
+
+const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
+const JOURNAL_KEY = 'voice_detective_story_journal_v1';
+const CASE_SCENARIO = `You are a world-weary noir detective in 1930s Jaipur, India. 
+The case: The legendary "Star of Jaipur" — a priceless jeweled pendant — has vanished from the Maharaja's locked vault overnight.
+Three suspects, all present at last night's palace dinner:
+1. COLONEL HARGREAVES — British army officer, deep in gambling debts
+2. MEERA DEVI — the Maharaja's niece, secretly engaged to a rival royal house
+3. RAJAN SETH — the palace treasurer, been skimming accounts for years
+
+You narrate the investigation like a classic noir detective. The player speaks in Hindi — you understand Hindi perfectly and respond in English in character.
+Keep responses to 2-3 short punchy sentences max. Be dramatic and atmospheric.
+The player's instruction may come translated into English from Hindi speech. Treat that translated English as exact intent.
+Maintain a continuous storyline that branches based on the player's latest choices and discoveries.
+When the player asks to investigate someone, reveal a new clue. 
+When they ask to accuse someone, evaluate if they have enough evidence.
+Track what clues have been revealed. After 3-4 clues, allow the mystery to be solved.
+Always end your response by asking what they want to do next (in 1 brief line).
+
+Suspects guilt levels (internal, don't reveal directly):
+- COLONEL HARGREAVES: 80% guilty (gambling debts, found his cufflink near vault)
+- MEERA DEVI: 30% (had motive but was in library at time)  
+- RAJAN SETH: 50% (embezzler but not the jewel thief this time)
+
+Available clues to reveal progressively:
+- A British army cufflink found near the vault door
+- The vault lock was picked, not forced — a professional job
+- Colonel Hargreaves was seen near the vault at midnight by a guard
+- Meera Devi was in the library with a witness all night
+- Rajan Seth's accounts show embezzlement but of cash, not jewels
+- The Colonel's hotel room has a one-way ticket to Bombay for tomorrow morning
+`;
+
+const SUSPECTS = [
+  { name: 'Col. Hargreaves', guilt: 0, status: 'suspect' },
+  { name: 'Meera Devi', guilt: 0, status: 'suspect' },
+  { name: 'Rajan Seth', guilt: 0, status: 'suspect' },
+];
+
+let evidenceCount = 1;
+
+loadJournal();
+
+// ============================================================
+//  RAIN ANIMATION
+// ============================================================
+function initRain() {
+  const canvas = document.getElementById('rain-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const drops = Array.from({ length: 120 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    speed: 4 + Math.random() * 6,
+    length: 12 + Math.random() * 20,
+    opacity: 0.2 + Math.random() * 0.5,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#c49a2a';
+    drops.forEach(d => {
+      ctx.globalAlpha = d.opacity;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - 1, d.y + d.length);
+      ctx.stroke();
+      d.y += d.speed;
+      if (d.y > canvas.height) { d.y = -d.length; d.x = Math.random() * canvas.width; }
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+}
+
+// ============================================================
+//  WAVE BARS
+// ============================================================
+function initWave() {
+  const container = document.getElementById('wave-container');
+  for (let i = 0; i < 24; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'wave-bar';
+    bar.style.animationDelay = `${(i * 0.06) % 0.8}s`;
+    bar.style.height = `${4 + Math.random() * 8}px`;
+    container.appendChild(bar);
+  }
+}
+
+// ============================================================
+//  SETUP & START
+// ============================================================
+function startGame() {
+  document.getElementById('setup-screen').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('game-screen').classList.add('active');
+    document.getElementById('header-lang').textContent = 'INPUT: HINDI';
+    logJournal({ kind: 'scene', role: 'system', text: '--- CASE FILE OPENED ---', at: new Date().toISOString(), turn: 0 });
+    initRecognition();
+    renderSuspects();
+    openingMonologue();
+  }, 800);
+}
+
+// ============================================================
+//  SUSPECTS RENDER
+// ============================================================
+function renderSuspects() {
+  const list = document.getElementById('suspects-list');
+  list.innerHTML = SUSPECTS.map((s, i) => `
+    <div class="suspect-card" id="suspect-${i}">
+      <div class="suspect-name">${s.name}</div>
+      <div class="suspect-status ${s.status}">${s.status.toUpperCase()}</div>
+      <div class="guilt-bar">
+        <div class="guilt-fill ${s.guilt > 60 ? 'high' : ''}" style="width:${s.guilt}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateSuspect(name, guiltDelta, status) {
+  const idx = SUSPECTS.findIndex(s => s.name.toLowerCase().includes(name.toLowerCase()));
+  if (idx === -1) return;
+  SUSPECTS[idx].guilt = Math.min(100, Math.max(0, SUSPECTS[idx].guilt + guiltDelta));
+  if (status) SUSPECTS[idx].status = status;
+  renderSuspects();
+}
+
+// ============================================================
+//  STORY SCENE
+// ============================================================
+function addToScene(role, text, className = '') {
+  const scene = document.getElementById('story-scene');
+  const entry = document.createElement('div');
+  entry.className = 'scene-entry';
+
+  const label = role === 'detective' ? '// DETECTIVE' :
+                role === 'player' ? '// YOU' : '// SYSTEM';
+  const roleClass = role === 'detective' ? 'detective' :
+                    role === 'player' ? 'player' : 'system';
+
+  entry.innerHTML = `
+    <div class="scene-role ${roleClass}">${label}</div>
+    <div class="scene-text ${className}" id="text-${Date.now()}">${text}</div>
+  `;
+  scene.appendChild(entry);
+  scene.scrollTop = scene.scrollHeight;
+  logJournal({
+    kind: 'scene',
+    role,
+    text,
+    className,
+    turn: turnCount,
+    at: new Date().toISOString()
+  });
+  return entry.querySelector('.scene-text');
+}
+
+function typeText(element, text, speed = 28) {
+  return new Promise(resolve => {
+    element.classList.add('typing-cursor');
+    element.textContent = '';
+    let i = 0;
+    const interval = setInterval(() => {
+      element.textContent += text[i++];
+      if (i >= text.length) {
+        clearInterval(interval);
+        element.classList.remove('typing-cursor');
+        resolve();
+      }
+    }, speed);
+  });
+}
+
+function addEvidence(text) {
+  evidenceCount++;
+  const list = document.getElementById('evidence-list');
+  const item = document.createElement('div');
+  const exhibit = `EXHIBIT ${String.fromCharCode(64 + evidenceCount)}`;
+  item.className = 'evidence-item new';
+  item.innerHTML = `<div class="evidence-tag">${exhibit}</div>${text}`;
+  list.appendChild(item);
+  logJournal({ kind: 'evidence', text, exhibit, turn: turnCount, at: new Date().toISOString() });
+  setTimeout(() => item.classList.remove('new'), 2000);
+}
+
+// ============================================================
+//  JOURNAL
+// ============================================================
+function loadJournal() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+    storyJournal = Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    storyJournal = [];
+  }
+}
+
+function saveJournal() {
+  localStorage.setItem(JOURNAL_KEY, JSON.stringify(storyJournal));
+}
+
+function logJournal(entry) {
+  storyJournal.push(entry);
+  if (storyJournal.length > 800) {
+    storyJournal = storyJournal.slice(-800);
+  }
+  saveJournal();
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function openStoryJournal() {
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Popup blocked. Please allow popups to open the story journal tab.');
+    return;
+  }
+
+  const entries = storyJournal.map(item => {
+    const stamp = new Date(item.at || Date.now()).toLocaleString();
+    if (item.kind === 'evidence') {
+      return `<div class="entry evidence"><div class="meta">${stamp} • ${item.exhibit || 'EVIDENCE'}</div><div>${escapeHtml(item.text || '')}</div></div>`;
+    }
+    return `<div class="entry"><div class="meta">${stamp} • ${(item.role || 'system').toUpperCase()}</div><div>${escapeHtml(item.text || '')}</div></div>`;
+  }).join('');
+
+  win.document.write(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Voice Detective Journal</title>
+<style>
+body{margin:0;padding:24px;background:#0e0a04;color:#d4c49a;font-family:'Courier Prime',monospace;line-height:1.7}
+h1{font-family:'Special Elite',serif;letter-spacing:3px;color:#c49a2a;margin:0 0 10px}
+.sub{color:#8b6914;font-size:12px;margin-bottom:20px}
+.entry{border-left:2px solid #8b6914;padding:10px 12px;margin-bottom:10px;background:#120d06}
+.entry.evidence{border-left-color:#c49a2a}
+.meta{font-size:11px;color:#8b6914;letter-spacing:1px;margin-bottom:4px}
+.empty{color:#8a7040;font-style:italic}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+</head><body>
+<h1>CASE JOURNAL</h1>
+<div class="sub">Persistent story timeline. Keeps your narrative across sessions on this browser.</div>
+${entries || '<div class="empty">No entries yet. Start the investigation first.</div>'}
+</body></html>`);
+  win.document.close();
+}
+
+// ============================================================
+//  CLAUDE API
+// ============================================================
+async function callClaude(systemPrompt, messages, maxTokens = 300) {
+  const response = await fetch('/api/claude', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Claude API error: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.text || '';
+}
+
+async function askClaude(englishIntent, rawInput, inputLanguage) {
+  conversationHistory.push({
+    role: 'user',
+    content: `[Input language: ${inputLanguage}] Raw: ${rawInput}\nIntent in English: ${englishIntent}`
+  });
+
+  const reply = await callClaude(CASE_SCENARIO, conversationHistory, 320);
+  conversationHistory.push({ role: 'assistant', content: reply });
+  return reply;
+}
+
+async function translateToEnglish(rawText, sourceLanguage) {
+  const translationSystem = `You are a precise translator for a voice game assistant.
+Translate user speech into clear natural English while preserving intent.
+Do not add extra interpretation, roleplay, or formatting.
+Return only the translated English sentence.`;
+
+  const translated = await callClaude(translationSystem, [{
+    role: 'user',
+    content: `Source language: ${sourceLanguage}\nText: ${rawText}`
+  }], 120);
+
+  return translated.trim();
+}
+
+// ============================================================
+//  ELEVENLABS TTS
+// ============================================================
+async function speakText(text) {
+  const response = await fetch('/api/tts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      voiceId: VOICE_ID,
+      text: text,
+      model_id: 'eleven_monolingual_v1',
+      voice_settings: {
+        stability: 0.65,
+        similarity_boost: 0.85,
+        style: 0.3,
+        use_speaker_boost: true
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `ElevenLabs error: ${response.status}`);
+  }
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+
+  return new Promise((resolve) => {
+    const wave = document.getElementById('wave-container');
+    wave.classList.add('active');
+    audio.play();
+    audio.onended = () => {
+      wave.classList.remove('active');
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+    audio.onerror = () => { wave.classList.remove('active'); resolve(); };
+  });
+}
+
+// ============================================================
+//  OPENING MONOLOGUE
+// ============================================================
+async function openingMonologue() {
+  const opening = "The rain falls on Jaipur like a confession nobody wanted to make. I've seen cities sweat in the summer heat, but this palace... this palace sweats guilt. The Star of Jaipur is gone — and someone in these marble halls knows exactly where it is. What do you want to investigate first, detective?";
+
+  const el = addToScene('detective', '');
+  await typeText(el, opening, 22);
+  turnCount++;
+
+  try {
+    await speakText(opening);
+    await promptLanguageChoice();
+  } catch(e) {
+    console.error('TTS error:', e);
+    addToScene('system', '⚠ Voice playback failed. Check server API configuration.');
+  }
+}
+
+async function promptLanguageChoice() {
+  awaitingLanguageChoice = true;
+  if (recognition) recognition.lang = 'en-IN';
+  document.getElementById('voice-label').textContent = '// LANGUAGE CHECK: ENGLISH OR HINDI';
+  document.getElementById('voice-transcript').textContent = 'Say: English or Hindi';
+  const prompt = 'Do you want to respond in English or Hindi? Say English or Hindi.';
+  addToScene('system', prompt);
+  await speakText(prompt);
+}
+
+// ============================================================
+//  SPEECH RECOGNITION (Hindi)
+// ============================================================
+function initRecognition() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    document.getElementById('voice-transcript').textContent = 'Speech recognition not supported. Use Chrome.';
+    document.getElementById('voice-transcript').classList.add('error');
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'hi-IN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    document.getElementById('voice-label').textContent = '// LISTENING...';
+    document.getElementById('voice-transcript').textContent = '...';
+  };
+
+  recognition.onresult = (event) => {
+    const result = event.results[event.results.length - 1];
+    const transcript = result[0].transcript;
+    document.getElementById('voice-transcript').textContent = transcript;
+    if (result.isFinal) {
+      handleRecognizedSpeech(transcript);
+    }
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Recognition error:', event.error);
+    document.getElementById('voice-transcript').textContent = 
+      event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
+    document.getElementById('voice-transcript').classList.add('error');
+    stopRecording();
+  };
+
+  recognition.onend = () => {
+    stopRecording();
+  };
+}
+
+function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  if (!recognition) return;
+  isRecording = true;
+  document.getElementById('voice-btn').classList.add('recording');
+  const modeLabel = awaitingLanguageChoice
+    ? '// LISTENING: LANGUAGE CHOICE'
+    : `// LISTENING IN ${preferredInputLanguage.toUpperCase()}...`;
+  document.getElementById('voice-label').textContent = modeLabel;
+  document.getElementById('voice-transcript').classList.remove('error');
+  document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
+    ? 'English or Hindi?'
+    : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
+  recognition.start();
+}
+
+function stopRecording() {
+  isRecording = false;
+  document.getElementById('voice-btn').classList.remove('recording');
+  if (awaitingLanguageChoice) {
+    document.getElementById('voice-label').textContent = '// WAITING FOR LANGUAGE CHOICE';
+  } else {
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+  }
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+}
+
+function setRecognitionLanguage(lang) {
+  if (!recognition) return;
+  recognition.lang = lang === 'english' ? 'en-US' : 'hi-IN';
+}
+
+function detectLanguageChoice(text) {
+  const normalized = text.toLowerCase();
+  const wantsEnglish = /english|inglish|अंग्रेज|इंग्लिश/.test(normalized);
+  const wantsHindi = /hindi|hindee|हिंदी|हिन्दी/.test(normalized);
+  if (wantsEnglish) return 'english';
+  if (wantsHindi) return 'hindi';
+  return null;
+}
+
+function isLikelyHindi(text) {
+  return /[\u0900-\u097F]/.test(text);
+}
+
+async function handleRecognizedSpeech(transcript) {
+  if (awaitingLanguageChoice) {
+    const selected = detectLanguageChoice(transcript);
+    if (!selected) {
+      addToScene('system', 'Could not detect language choice. Please say English or Hindi.');
+      document.getElementById('voice-label').textContent = '// SAY: ENGLISH OR HINDI';
+      document.getElementById('voice-transcript').textContent = 'Please say English or Hindi';
+      return;
+    }
+
+    preferredInputLanguage = selected;
+    awaitingLanguageChoice = false;
+    setRecognitionLanguage(selected);
+    document.getElementById('header-lang').textContent = `INPUT: ${selected.toUpperCase()}`;
+    addToScene('system', `Language set to ${selected.toUpperCase()}. Give your command now.`);
+    document.getElementById('voice-label').textContent = `// READY IN ${selected.toUpperCase()}`;
+    document.getElementById('voice-transcript').textContent = selected === 'hindi' ? 'अब अपना आदेश दीजिए।' : 'Now give your command.';
+    return;
+  }
+
+  await processPlayerInput(transcript, preferredInputLanguage);
+}
+
+// ============================================================
+//  PROCESS INPUT → CLAUDE → TTS
+// ============================================================
+async function processPlayerInput(rawText, selectedLanguage) {
+  if (!rawText.trim()) return;
+  const effectiveLanguage = isLikelyHindi(rawText) ? 'hindi' : selectedLanguage;
+
+  // Show what player said
+  addToScene('player', rawText, effectiveLanguage === 'hindi' ? 'hindi' : '');
+  turnCount++;
+
+  // Disable mic during processing
+  document.getElementById('voice-btn').disabled = true;
+  document.getElementById('voice-label').textContent = '// DETECTIVE IS THINKING...';
+  document.getElementById('voice-transcript').textContent = '';
+
+  // Thinking indicator
+  const thinkEl = addToScene('detective', '');
+  thinkEl.innerHTML = '<span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>';
+
+  try {
+    let englishIntent = rawText;
+    if (effectiveLanguage === 'hindi') {
+      englishIntent = await translateToEnglish(rawText, 'Hindi');
+      addToScene('system', `English intent: ${englishIntent}`);
+    }
+
+    // Get Claude response
+    const reply = await askClaude(englishIntent, rawText, effectiveLanguage);
+
+    // Replace thinking with real text
+    thinkEl.innerHTML = '';
+    await typeText(thinkEl, reply, 24);
+
+    // Update suspects based on keywords in reply
+    updateSuspectsFromContext(reply, rawText);
+
+    // Extract and add evidence if new clue mentioned
+    if (reply.toLowerCase().includes('cufflink') || reply.toLowerCase().includes('cuff link')) {
+      addEvidence('A British army cufflink found near the vault entrance.');
+      updateSuspect('Hargreaves', 25, 'suspect');
+    }
+    if (reply.toLowerCase().includes('midnight') || reply.toLowerCase().includes('guard')) {
+      addEvidence('Palace guard saw Col. Hargreaves near the vault at midnight.');
+      updateSuspect('Hargreaves', 20, 'suspect');
+    }
+    if (reply.toLowerCase().includes('library') || reply.toLowerCase().includes('witness')) {
+      addEvidence('Meera Devi confirmed in library all night — alibi holds.');
+      updateSuspect('Meera', -10, 'clear');
+    }
+    if (reply.toLowerCase().includes('ticket') || reply.toLowerCase().includes('bombay')) {
+      addEvidence('One-way ticket to Bombay found in Col. Hargreaves\'s room. Train leaves 6AM.');
+      updateSuspect('Hargreaves', 30, 'suspect');
+    }
+    if (reply.toLowerCase().includes('embezzl') || reply.toLowerCase().includes('accounts')) {
+      addEvidence('Rajan Seth\'s ledgers show cash embezzlement — not jewel theft.');
+    }
+
+    // Check for solve
+    if (reply.toLowerCase().includes('case closed') || reply.toLowerCase().includes('guilty') && reply.toLowerCase().includes('colonel')) {
+      setTimeout(() => showOutcome(
+        'CASE CLOSED',
+        'Colonel Hargreaves. The gambling debts drove him to it. The cufflink, the midnight sighting, the one-way ticket — all pointing to the same desperate man. The Star of Jaipur is recovered from his luggage. Justice, at last, in the city of jewels.'
+      ), 2000);
+    }
+
+    // Speak the reply
+    await speakText(reply);
+    await promptLanguageChoice();
+
+  } catch (err) {
+    thinkEl.textContent = `⚠ Error: ${err.message}. Check your API keys.`;
+    thinkEl.style.color = 'var(--red)';
+    console.error(err);
+  }
+
+  document.getElementById('voice-btn').disabled = false;
+  if (!awaitingLanguageChoice) {
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+  }
+}
+
+function updateSuspectsFromContext(reply, hindi) {
+  const text = (reply + ' ' + hindi).toLowerCase();
+  if (text.includes('hargreaves') || text.includes('colonel') || text.includes('colonel') || text.includes('कर्नल')) {
+    updateSuspect('Hargreaves', 5);
+  }
+  if (text.includes('meera') || text.includes('मीरा')) {
+    updateSuspect('Meera', 2);
+  }
+  if (text.includes('rajan') || text.includes('seth') || text.includes('राजन')) {
+    updateSuspect('Seth', 3);
+  }
+}
+
+// ============================================================
+//  OUTCOME
+// ============================================================
+function showOutcome(title, text) {
+  document.getElementById('outcome-title').textContent = title;
+  document.getElementById('outcome-text').textContent = text;
+  document.getElementById('outcome-overlay').classList.add('active');
+  try { speakText(text); } catch(e) {}
+}
+
+function resetGame() {
+  conversationHistory = [];
+  turnCount = 0;
+  evidenceCount = 1;
+  awaitingLanguageChoice = false;
+  preferredInputLanguage = 'hindi';
+  SUSPECTS.forEach(s => { s.guilt = 0; s.status = 'suspect'; });
+
+  document.getElementById('story-scene').innerHTML = '';
+  document.getElementById('evidence-list').innerHTML = `
+    <div class="evidence-item new">
+      <div class="evidence-tag">EXHIBIT A</div>
+      A jeweled pendant — the Star of Jaipur — has vanished from the Maharaja's locked vault.
+    </div>
+  `;
+  document.getElementById('outcome-overlay').classList.remove('active');
+  document.getElementById('header-lang').textContent = 'INPUT: HINDI';
+  renderSuspects();
+  logJournal({ kind: 'scene', role: 'system', text: '--- NEW CASE STARTED ---', at: new Date().toISOString(), turn: 0 });
+  openingMonologue();
+}
+
+// ============================================================
+//  KEYBOARD SHORTCUT
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && document.getElementById('game-screen').classList.contains('active')) {
+    e.preventDefault();
+    if (!document.getElementById('voice-btn').disabled) toggleRecording();
+  }
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+initRain();
+initWave();
+</script>
+</body>
+</html>
