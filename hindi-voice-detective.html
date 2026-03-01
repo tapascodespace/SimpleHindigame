@@ -11,16 +11,16 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --ink: #ffffff;
-    --paper: #0f172a;
-    --paper-dark: #334155;
-    --sepia: #2563eb;
-    --sepia-light: #60a5fa;
-    --red: #dc2626;
-    --red-dim: #991b1b;
-    --green: #16a34a;
-    --smoke: rgba(255,255,255,0.9);
-    --glow: 0 0 20px rgba(37,99,235,0.3);
+    --ink: #1a1209;
+    --paper: #f0e6c8;
+    --paper-dark: #d4c49a;
+    --sepia: #8b6914;
+    --sepia-light: #c49a2a;
+    --red: #c0392b;
+    --red-dim: #7a1f14;
+    --green: #2d6a2d;
+    --smoke: rgba(26,18,9,0.85);
+    --glow: 0 0 20px rgba(196,154,42,0.3);
   }
 
   html, body {
@@ -134,7 +134,7 @@
     box-shadow: var(--glow);
   }
 
-  .api-input::placeholder { color: #cbd5e1; }
+  .api-input::placeholder { color: #5a4a2a; }
 
   .start-btn {
     width: 100%;
@@ -263,7 +263,7 @@
   /* EVIDENCE PANEL */
   .evidence-panel {
     grid-area: evidence;
-    background: #f1f5f9;
+    background: #120d06;
     border-right: 2px solid var(--sepia);
     padding: 24px 20px;
     overflow-y: auto;
@@ -278,18 +278,18 @@
     color: var(--sepia);
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #2a1f0a;
   }
 
   .evidence-item {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: #1a1209;
+    border: 1px solid #2a1f0a;
     border-left: 3px solid var(--sepia);
     padding: 12px;
     margin-bottom: 12px;
     font-family: 'Courier Prime', monospace;
     font-size: 12px;
-    color: #475569;
+    color: #a0845a;
     line-height: 1.6;
     animation: slide-in 0.4s ease;
   }
@@ -311,7 +311,7 @@
   /* STORY PANEL */
   .story-panel {
     grid-area: story;
-    background: #f8fafc;
+    background: #0e0a04;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -376,8 +376,8 @@
     justify-content: center;
     gap: 4px;
     padding: 16px 32px;
-    background: #f8fafc;
-    border-top: 1px solid #ffffff;
+    background: #0e0a04;
+    border-top: 1px solid #1a1209;
   }
 
   .wave-container.active { display: flex; }
@@ -397,7 +397,7 @@
   /* CLUES PANEL */
   .clues-panel {
     grid-area: clues;
-    background: #f1f5f9;
+    background: #120d06;
     border-left: 2px solid var(--sepia);
     padding: 24px 20px;
     overflow-y: auto;
@@ -406,8 +406,8 @@
   }
 
   .suspect-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: #1a1209;
+    border: 1px solid #2a1f0a;
     padding: 12px;
     margin-bottom: 12px;
     animation: slide-in 0.4s ease;
@@ -432,7 +432,7 @@
 
   .guilt-bar {
     height: 2px;
-    background: #e2e8f0;
+    background: #2a1f0a;
     margin-top: 8px;
     overflow: hidden;
   }
@@ -460,7 +460,7 @@
   .voice-btn {
     width: 52px; height: 52px;
     border-radius: 50%;
-    background: #ffffff;
+    background: #1a1209;
     border: 2px solid var(--sepia);
     cursor: pointer;
     display: flex;
@@ -516,7 +516,7 @@
   .voice-hint {
     font-family: 'Courier Prime', monospace;
     font-size: 11px;
-    color: #64748b;
+    color: #4a3820;
     text-align: right;
     line-height: 1.6;
   }
@@ -538,7 +538,7 @@
   #outcome-overlay {
     display: none;
     position: fixed; inset: 0;
-    background: rgba(255,255,255,0.98);
+    background: rgba(10,7,2,0.95);
     z-index: 600;
     align-items: center;
     justify-content: center;
@@ -550,7 +550,7 @@
     text-align: center;
     padding: 60px;
     border: 3px solid var(--sepia);
-    background: #f8fafc;
+    background: #0e0a04;
     max-width: 480px;
     box-shadow: var(--glow);
   }
@@ -681,7 +681,7 @@
     </div>
     <div class="voice-hint">
       Detective speaks in English<br>
-      <span style="color:#e2e8f0">You can answer in English or Hindi</span>
+      <span style="color:#2a1f0a">You can answer in English or Hindi</span>
     </div>
   </footer>
 
@@ -994,10 +994,10 @@ function openStoryJournal() {
   win.document.write(`<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Voice Detective Journal</title>
 <style>
-body{margin:0;padding:24px;background:#f8fafc;color:#d4c49a;font-family:'Courier Prime',monospace;line-height:1.7}
+body{margin:0;padding:24px;background:#0e0a04;color:#d4c49a;font-family:'Courier Prime',monospace;line-height:1.7}
 h1{font-family:'Special Elite',serif;letter-spacing:3px;color:#c49a2a;margin:0 0 10px}
 .sub{color:#8b6914;font-size:12px;margin-bottom:20px}
-.entry{border-left:2px solid #8b6914;padding:10px 12px;margin-bottom:10px;background:#f1f5f9}
+.entry{border-left:2px solid #8b6914;padding:10px 12px;margin-bottom:10px;background:#120d06}
 .entry.evidence{border-left-color:#c49a2a}
 .meta{font-size:11px;color:#8b6914;letter-spacing:1px;margin-bottom:4px}
 .empty{color:#8a7040;font-style:italic}
