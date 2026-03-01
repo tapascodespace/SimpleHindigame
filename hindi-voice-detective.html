@@ -603,7 +603,56 @@
     .evidence-panel { display: none; }
     .clues-panel { max-height: 180px; }
   }
+
+/* SUPERCELL STYLE CSS */
+:root {
+  --super-gold: linear-gradient(180deg, #FFE066 0%, #F5B000 100%);
+  --super-blue: #1B75BC;
+  --super-red: #E74C3C;
+  --super-bg: #2C3E50;
+  --card-shadow: 0 12px 24px rgba(0,0,0,0.5);
+  --thick-border: 4px solid #111;
+  --primary-theme: var(--super-blue);
+}
+
+.game-card { width: 100%; max-width: 420px; background: var(--super-bg); border-radius: 24px; box-shadow: var(--card-shadow); border: var(--thick-border); overflow: hidden; margin: 20px auto; position: relative; display: flex; flex-direction: column; font-family: 'Arial', sans-serif; transition: box-shadow 0.3s ease; }
+.card-header { background: var(--super-gold); padding: 16px; text-align: center; border-bottom: var(--thick-border); }
+.card-header h1 { margin: 0; font-size: 22px; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; letter-spacing: 2px; font-weight: 900; }
+.card-stage { flex: 1; background: radial-gradient(circle at center, #3A536B 0%, #1A252F 100%); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; position: relative; min-height: 250px; }
+.enemy-sprite { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.6)); z-index: 2; transition: transform 0.2s ease; }
+.enemy-name { margin-top: 50px; color: #fff; font-weight: bold; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px #000; }
+.health-ring-container { position: absolute; top: 130px; z-index: 3; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; background: #111; border-radius: 50%; border: 3px solid #000; }
+.health-ring { transform: rotate(-90deg); }
+.health-ring-bg { fill: none; stroke: #333; stroke-width: 8; }
+.health-ring-fill { fill: none; stroke: #4CAF50; stroke-width: 8; stroke-dasharray: 213; stroke-dashoffset: 0; transition: stroke-dashoffset 0.5s ease-out, stroke 0.3s; }
+.health-text { position: absolute; color: #fff; font-weight: 900; font-size: 20px; text-shadow: 1px 1px 0 #000; }
+.emote-bubble { position: absolute; top: 20px; right: 50px; background: #fff; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #111; z-index: 4; box-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.card-dialogue { background: var(--super-bg); padding: 10px 20px; display: flex; justify-content: center; position: relative; z-index: 5; margin-top: -20px; }
+.speech-bubble { background: #fff; border: var(--thick-border); border-radius: 16px; padding: 16px; width: 100%; text-align: center; position: relative; box-shadow: 0 8px 0 rgba(0,0,0,0.1); }
+.speech-bubble::before { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); border-width: 0 14px 14px 14px; border-style: solid; border-color: transparent transparent #111 transparent; }
+.speech-bubble::after { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent #fff transparent; }
+.hindi-text { font-size: 20px; font-weight: 900; color: #111; margin-bottom: 6px; }
+.english-translation { font-size: 14px; font-weight: bold; color: #666; }
+.card-action-bar { background: #111; padding: 20px; display: flex; align-items: center; gap: 16px; border-top: var(--thick-border); }
+.voice-btn { width: 64px; height: 64px; border-radius: 50%; background: var(--primary-theme); border: 4px solid #fff; box-shadow: 0 6px 0px rgba(0,0,0,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, box-shadow 0.1s, background 0.3s; color: #fff; }
+.voice-btn:active { transform: translateY(6px); box-shadow: 0 0px 0px rgba(0,0,0,0.5); }
+.voice-btn.recording { background: var(--super-red) !important; animation: pulseMic 1s infinite alternate; }
+.mic-icon { width: 32px; height: 32px; }
+.action-status { flex: 1; }
+.status-label { color: var(--primary-theme); font-weight: 900; font-size: 16px; text-transform: uppercase; margin-bottom: 4px; }
+.status-transcript { color: #fff; font-size: 14px; min-height: 20px; }
+@keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+@keyframes bounceIn { 0% { transform: scale(0.1); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes bounceEnemy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+@keyframes flashBg { 0%, 100% { background: radial-gradient(circle at center, #3A536B 0%, #1A252F 100%); } 50% { background: radial-gradient(circle at center, #fff 0%, #E74C3C 100%); } }
+@keyframes pulseMic { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 100% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } }
+@keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+.anim-shake { animation: shake 0.5s; }
+.anim-bounce { animation: bounceEnemy 0.5s; }
+.anim-flash { animation: flashBg 0.3s; }
+.anim-bounceIn { animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 </style>
+
 </head>
 <body>
 
@@ -626,65 +675,53 @@
 
 <!-- ===== GAME SCREEN ===== -->
 <div id="game-screen">
+  <!-- Supercell-Style Game Card -->
+  <div class="game-card" id="game-card">
+    
+    <!-- Crown / Header -->
+    <header class="card-header" id="card-header">
+      <h1 id="level-title">LEVEL 1: THE ARENA</h1>
+    </header>
 
-  <!-- Header -->
-  <header class="game-header">
-    <div class="header-title">
-      <div class="header-dot"></div>
-      CASE FILE
+    <!-- Stage Area -->
+    <div class="card-stage" id="card-stage">
+      <div id="visual-effect-layer"></div>
+      <img src="https://ui-avatars.com/api/?name=Barbarian&background=random&size=120" alt="Enemy Context" id="enemy-image" class="enemy-sprite" />
+      
+      <!-- Circular Health / Status -->
+      <div class="health-ring-container">
+        <svg class="health-ring" width="80" height="80">
+          <circle class="health-ring-bg" cx="40" cy="40" r="34" />
+          <circle class="health-ring-fill" id="health-fill" cx="40" cy="40" r="34" />
+        </svg>
+        <div class="health-text" id="health-text">100</div>
+      </div>
+      
+      <div class="enemy-name" id="enemy-name">BARBARIAN</div>
+      <div class="emote-bubble" id="emote-bubble" style="display: none;"></div>
     </div>
-    <div class="header-case" id="case-title">THE MAHARAJA'S MISSING JEWEL</div>
-    <div class="header-actions">
-      <button class="journal-btn" onclick="openStoryJournal()">OPEN JOURNAL</button>
-      <div class="header-lang" id="header-lang">INPUT: HINDI</div>
-    </div>
-  </header>
 
-  <!-- Evidence Panel -->
-  <aside class="evidence-panel">
-    <div class="panel-header">// EVIDENCE LOG</div>
-    <div id="evidence-list">
-      <div class="evidence-item new">
-        <div class="evidence-tag">EXHIBIT A</div>
-        A jeweled pendant — the Star of Jaipur — has vanished from the Maharaja's locked vault.
+    <!-- Speech Bubble Area -->
+    <div class="card-dialogue">
+      <div class="speech-bubble" id="speech-bubble">
+        <div class="hindi-text" id="hindi-text">Aakraman karo!</div>
+        <div class="english-translation" id="english-text">Prepare to attack!</div>
       </div>
     </div>
-  </aside>
 
-  <!-- Story Center -->
-  <main class="story-panel">
-    <div class="story-scene" id="story-scene"></div>
-    <div class="wave-container" id="wave-container">
-      <!-- wave bars injected by JS -->
-    </div>
-  </main>
-
-  <!-- Suspects Panel -->
-  <aside class="clues-panel">
-    <div class="panel-header">// SUSPECTS</div>
-    <div id="suspects-list"></div>
-  </aside>
-
-  <!-- Footer — Voice -->
-  <footer class="game-footer">
-    <button class="voice-btn" id="voice-btn" onclick="toggleRecording()" title="Hold to speak">
-      <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-        <line x1="12" y1="19" x2="12" y2="23"/>
-        <line x1="8" y1="23" x2="16" y2="23"/>
-      </svg>
-    </button>
-    <div class="voice-status">
-      <div class="voice-status-label" id="voice-label">// READY: CHOOSE LANGUAGE EACH TURN</div>
-      <div class="voice-transcript" id="voice-transcript">The detective will ask: English or Hindi?</div>
-    </div>
-    <div class="voice-hint">
-      Detective speaks in English<br>
-      <span style="color:#2a1f0a">You can answer in English or Hindi</span>
-    </div>
-  </footer>
-
+    <!-- Action Bar -->
+    <footer class="card-action-bar" id="action-bar">
+      <button class="voice-btn" id="voice-btn" onclick="toggleRecording()">
+        <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2zM8 18h8v2H8v-2z"/>
+        </svg>
+      </button>
+      <div class="action-status">
+        <div class="status-label" id="voice-label">TAP TO SPEAK</div>
+        <div class="status-transcript" id="voice-transcript"></div>
+      </div>
+    </footer>
+  </div>
 </div>
 
 <!-- Outcome Overlay -->
@@ -735,6 +772,25 @@ When the player asks to investigate someone, reveal a new clue.
 When they ask to accuse someone, evaluate if they have enough evidence.
 Track what clues have been revealed. After 3-4 clues, allow the mystery to be solved.
 Always end your response by asking what they want to do next (in 1 brief line).
+
+CRITICAL INSTRUCTION: You MUST return your response as a RAW JSON object matching this exact schema:
+{
+  "header": "Level / Location Name",
+  "hindi_text": "Character's spoken text in Hindi (if they speak)",
+  "english_translation": "English translation or the detective's English narration",
+  "ui_theme": {
+    "primary": "#1B75BC",
+    "animation": "bounceIn"
+  },
+  "enemy": {
+    "name": "Target or Suspect Name",
+    "health": 100,
+    "image_url": "https://ui-avatars.com/api/?name=Suspect&background=random&size=120"
+  },
+  "visual_effect": "shake, bounce, flash, confetti, or empty string",
+  "emote": "angry, happy, sad, or surprised"
+}
+Output ONLY a valid JSON object. Do not include markdown codeblocks or other text.
 
 Suspects guilt levels (internal, don't reveal directly):
 - COLONEL HARGREAVES: 80% guilty (gambling debts, found his cufflink near vault)
@@ -999,7 +1055,56 @@ h1{font-family:'Special Elite',serif;letter-spacing:3px;color:#c49a2a;margin:0 0
 .entry.evidence{border-left-color:#c49a2a}
 .meta{font-size:11px;color:#8b6914;letter-spacing:1px;margin-bottom:4px}
 .empty{color:#8a7040;font-style:italic}
+
+/* SUPERCELL STYLE CSS */
+:root {
+  --super-gold: linear-gradient(180deg, #FFE066 0%, #F5B000 100%);
+  --super-blue: #1B75BC;
+  --super-red: #E74C3C;
+  --super-bg: #2C3E50;
+  --card-shadow: 0 12px 24px rgba(0,0,0,0.5);
+  --thick-border: 4px solid #111;
+  --primary-theme: var(--super-blue);
+}
+
+.game-card { width: 100%; max-width: 420px; background: var(--super-bg); border-radius: 24px; box-shadow: var(--card-shadow); border: var(--thick-border); overflow: hidden; margin: 20px auto; position: relative; display: flex; flex-direction: column; font-family: 'Arial', sans-serif; transition: box-shadow 0.3s ease; }
+.card-header { background: var(--super-gold); padding: 16px; text-align: center; border-bottom: var(--thick-border); }
+.card-header h1 { margin: 0; font-size: 22px; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; letter-spacing: 2px; font-weight: 900; }
+.card-stage { flex: 1; background: radial-gradient(circle at center, #3A536B 0%, #1A252F 100%); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; position: relative; min-height: 250px; }
+.enemy-sprite { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.6)); z-index: 2; transition: transform 0.2s ease; }
+.enemy-name { margin-top: 50px; color: #fff; font-weight: bold; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px #000; }
+.health-ring-container { position: absolute; top: 130px; z-index: 3; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; background: #111; border-radius: 50%; border: 3px solid #000; }
+.health-ring { transform: rotate(-90deg); }
+.health-ring-bg { fill: none; stroke: #333; stroke-width: 8; }
+.health-ring-fill { fill: none; stroke: #4CAF50; stroke-width: 8; stroke-dasharray: 213; stroke-dashoffset: 0; transition: stroke-dashoffset 0.5s ease-out, stroke 0.3s; }
+.health-text { position: absolute; color: #fff; font-weight: 900; font-size: 20px; text-shadow: 1px 1px 0 #000; }
+.emote-bubble { position: absolute; top: 20px; right: 50px; background: #fff; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #111; z-index: 4; box-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.card-dialogue { background: var(--super-bg); padding: 10px 20px; display: flex; justify-content: center; position: relative; z-index: 5; margin-top: -20px; }
+.speech-bubble { background: #fff; border: var(--thick-border); border-radius: 16px; padding: 16px; width: 100%; text-align: center; position: relative; box-shadow: 0 8px 0 rgba(0,0,0,0.1); }
+.speech-bubble::before { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); border-width: 0 14px 14px 14px; border-style: solid; border-color: transparent transparent #111 transparent; }
+.speech-bubble::after { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent #fff transparent; }
+.hindi-text { font-size: 20px; font-weight: 900; color: #111; margin-bottom: 6px; }
+.english-translation { font-size: 14px; font-weight: bold; color: #666; }
+.card-action-bar { background: #111; padding: 20px; display: flex; align-items: center; gap: 16px; border-top: var(--thick-border); }
+.voice-btn { width: 64px; height: 64px; border-radius: 50%; background: var(--primary-theme); border: 4px solid #fff; box-shadow: 0 6px 0px rgba(0,0,0,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, box-shadow 0.1s, background 0.3s; color: #fff; }
+.voice-btn:active { transform: translateY(6px); box-shadow: 0 0px 0px rgba(0,0,0,0.5); }
+.voice-btn.recording { background: var(--super-red) !important; animation: pulseMic 1s infinite alternate; }
+.mic-icon { width: 32px; height: 32px; }
+.action-status { flex: 1; }
+.status-label { color: var(--primary-theme); font-weight: 900; font-size: 16px; text-transform: uppercase; margin-bottom: 4px; }
+.status-transcript { color: #fff; font-size: 14px; min-height: 20px; }
+@keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+@keyframes bounceIn { 0% { transform: scale(0.1); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes bounceEnemy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+@keyframes flashBg { 0%, 100% { background: radial-gradient(circle at center, #3A536B 0%, #1A252F 100%); } 50% { background: radial-gradient(circle at center, #fff 0%, #E74C3C 100%); } }
+@keyframes pulseMic { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 100% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } }
+@keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+.anim-shake { animation: shake 0.5s; }
+.anim-bounce { animation: bounceEnemy 0.5s; }
+.anim-flash { animation: flashBg 0.3s; }
+.anim-bounceIn { animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 </style>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
@@ -1054,7 +1159,7 @@ Translate user speech into clear natural English while preserving intent.
 Do not add extra interpretation, roleplay, or formatting.
 Return only the translated English sentence.`;
 
-  const translated = await callClaude(translationSystem, [{
+  const translated  = await callClaude(translationSystem, [{
     role: 'user',
     content: `Source language: ${sourceLanguage}\nText: ${rawText}`
   }], 120);
@@ -1255,80 +1360,71 @@ async function handleRecognizedSpeech(transcript) {
 // ============================================================
 async function processPlayerInput(rawText, selectedLanguage) {
   if (!rawText.trim()) return;
-  const effectiveLanguage = isLikelyHindi(rawText) ? 'hindi' : selectedLanguage;
+  const effectiveLanguage = typeof isLikelyHindi === 'function' && isLikelyHindi(rawText) ? 'hindi' : selectedLanguage;
 
-  // Show what player said
-  addToScene('player', rawText, effectiveLanguage === 'hindi' ? 'hindi' : '');
-  turnCount++;
+  if (typeof turnCount !== 'undefined') turnCount++;
 
   // Disable mic during processing
-  document.getElementById('voice-btn').disabled = true;
-  document.getElementById('voice-label').textContent = '// DETECTIVE IS THINKING...';
-  document.getElementById('voice-transcript').textContent = '';
-
-  // Thinking indicator
-  const thinkEl = addToScene('detective', '');
-  thinkEl.innerHTML = '<span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>';
+  const voiceBtn = document.getElementById('voice-btn');
+  if (voiceBtn) voiceBtn.disabled = true;
+  const voiceLabel = document.getElementById('voice-label');
+  if (voiceLabel) voiceLabel.textContent = 'THINKING...';
+  const voiceTranscript = document.getElementById('voice-transcript');
+  if (voiceTranscript) voiceTranscript.textContent = '';
+  
+  const emoteEl = document.getElementById('emote-bubble');
+  if (emoteEl) {
+    emoteEl.style.display = 'flex';
+    emoteEl.textContent = '🤔';
+  }
 
   try {
     let englishIntent = rawText;
-    if (effectiveLanguage === 'hindi') {
+    if (effectiveLanguage === 'hindi' && typeof translateToEnglish === 'function') {
       englishIntent = await translateToEnglish(rawText, 'Hindi');
-      addToScene('system', `English intent: ${englishIntent}`);
     }
 
-    // Get Claude response
-    const reply = await askClaude(englishIntent, rawText, effectiveLanguage);
-
-    // Replace thinking with real text
-    thinkEl.innerHTML = '';
-    await typeText(thinkEl, reply, 24);
-
-    // Update suspects based on keywords in reply
-    updateSuspectsFromContext(reply, rawText);
-
-    // Extract and add evidence if new clue mentioned
-    if (reply.toLowerCase().includes('cufflink') || reply.toLowerCase().includes('cuff link')) {
-      addEvidence('A British army cufflink found near the vault entrance.');
-      updateSuspect('Hargreaves', 25, 'suspect');
-    }
-    if (reply.toLowerCase().includes('midnight') || reply.toLowerCase().includes('guard')) {
-      addEvidence('Palace guard saw Col. Hargreaves near the vault at midnight.');
-      updateSuspect('Hargreaves', 20, 'suspect');
-    }
-    if (reply.toLowerCase().includes('library') || reply.toLowerCase().includes('witness')) {
-      addEvidence('Meera Devi confirmed in library all night — alibi holds.');
-      updateSuspect('Meera', -10, 'clear');
-    }
-    if (reply.toLowerCase().includes('ticket') || reply.toLowerCase().includes('bombay')) {
-      addEvidence('One-way ticket to Bombay found in Col. Hargreaves\'s room. Train leaves 6AM.');
-      updateSuspect('Hargreaves', 30, 'suspect');
-    }
-    if (reply.toLowerCase().includes('embezzl') || reply.toLowerCase().includes('accounts')) {
-      addEvidence('Rajan Seth\'s ledgers show cash embezzlement — not jewel theft.');
+    // Get JSON response
+    const jsonStr = await askClaude(englishIntent, rawText, effectiveLanguage);
+    let gameData;
+    try {
+      gameData = JSON.parse(jsonStr.substring(jsonStr.indexOf('{'), jsonStr.lastIndexOf('}') + 1));
+    } catch(e) {
+      console.error("Failed to parse JSON", jsonStr);
+      // Fallback
+      gameData = {
+         header: "THE INVESTIGATION",
+         hindi_text: "",
+         english_translation: jsonStr,
+         ui_theme: { primary: "#1B75BC", animation: "bounceIn" },
+         enemy: { name: "Suspect", health: 100, image_url: "https://ui-avatars.com/api/?name=Suspect&background=random&size=120" },
+         visual_effect: "",
+         emote: "surprised"
+      };
     }
 
-    // Check for solve
-    if (reply.toLowerCase().includes('case closed') || reply.toLowerCase().includes('guilty') && reply.toLowerCase().includes('colonel')) {
-      setTimeout(() => showOutcome(
-        'CASE CLOSED',
-        'Colonel Hargreaves. The gambling debts drove him to it. The cufflink, the midnight sighting, the one-way ticket — all pointing to the same desperate man. The Star of Jaipur is recovered from his luggage. Justice, at last, in the city of jewels.'
-      ), 2000);
+    // Apply JSON state to Supercell Card UI
+    if (typeof renderGameState === 'function') {
+      renderGameState(gameData);
     }
 
     // Speak the reply
-    await speakText(reply);
-    await promptLanguageChoice();
+    if (typeof speakText === 'function') {
+      await speakText(gameData.english_translation || gameData.hindi_text);
+    }
+    
+    if (typeof promptLanguageChoice === 'function') {
+      await promptLanguageChoice();
+    }
 
   } catch (err) {
-    thinkEl.textContent = `⚠ Error: ${err.message}. Check your API keys.`;
-    thinkEl.style.color = 'var(--red)';
+    if (voiceTranscript) voiceTranscript.textContent = `⚠ Error: ${err.message}`;
     console.error(err);
   }
 
-  document.getElementById('voice-btn').disabled = false;
-  if (!awaitingLanguageChoice) {
-    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+  if (voiceBtn) voiceBtn.disabled = false;
+  if (typeof awaitingLanguageChoice !== 'undefined' && !awaitingLanguageChoice && voiceLabel) {
+    voiceLabel.textContent = 'TAP TO SPEAK';
   }
 }
 
@@ -1392,6 +1488,99 @@ document.addEventListener('keydown', (e) => {
 // ============================================================
 initRain();
 initWave();
+
+function renderGameState(gameData) {
+  if (gameData.ui_theme && gameData.ui_theme.primary) {
+    document.documentElement.style.setProperty('--primary-theme', gameData.ui_theme.primary);
+    document.getElementById('voice-btn').style.backgroundColor = 'var(--primary-theme)';
+    document.getElementById('voice-label').style.color = 'var(--primary-theme)';
+  }
+  if (gameData.header) document.getElementById('level-title').textContent = gameData.header;
+  if (gameData.hindi_text) document.getElementById('hindi-text').textContent = gameData.hindi_text;
+  if (gameData.english_translation) document.getElementById('english-text').textContent = gameData.english_translation;
+  if (gameData.enemy) {
+    if (gameData.enemy.name) document.getElementById('enemy-name').textContent = gameData.enemy.name;
+    if (gameData.enemy.image_url && gameData.enemy.image_url !== 'placeholder.png') {
+      document.getElementById('enemy-image').src = gameData.enemy.image_url;
+    }
+    updateHealthBar(gameData.enemy.health || 0);
+  }
+  const emoteEl = document.getElementById('emote-bubble');
+  if (gameData.emote) {
+    const emoteMap = { 'angry': '💢', 'happy': '✨', 'sad': '💧', 'surprised': '❗', 'thinking': '🤔' };
+    emoteEl.textContent = emoteMap[gameData.emote.toLowerCase()] || '💬';
+    emoteEl.style.display = 'flex';
+    emoteEl.style.animation = 'none';
+    void emoteEl.offsetWidth; 
+    emoteEl.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  } else {
+    emoteEl.style.display = 'none';
+  }
+  if (gameData.ui_theme && gameData.ui_theme.animation) animateCard(gameData.ui_theme.animation);
+  if (gameData.visual_effect) triggerVisualEffect(gameData.visual_effect);
+}
+
+function updateHealthBar(newHealth) {
+  const healthFill = document.getElementById('health-fill');
+  const healthText = document.getElementById('health-text');
+  if (!healthFill || !healthText) return;
+  const clampedHealth = Math.max(0, Math.min(100, newHealth));
+  healthText.textContent = clampedHealth;
+  const offset = 213 - (213 * clampedHealth) / 100;
+  healthFill.style.strokeDashoffset = offset;
+  if (clampedHealth > 50) healthFill.style.stroke = '#4CAF50';
+  else if (clampedHealth > 20) healthFill.style.stroke = '#FF9800';
+  else healthFill.style.stroke = '#F44336';
+}
+
+function triggerVisualEffect(effect) {
+  const stage = document.getElementById('card-stage');
+  const card = document.getElementById('game-card');
+  const enemy = document.getElementById('enemy-image');
+  if(!stage || !card || !enemy) return;
+  card.classList.remove('anim-shake');
+  enemy.classList.remove('anim-bounce');
+  stage.classList.remove('anim-flash');
+  void card.offsetWidth;
+  if (effect === 'shake') card.classList.add('anim-shake');
+  else if (effect === 'bounce') enemy.classList.add('anim-bounce');
+  else if (effect === 'flash') stage.classList.add('anim-flash');
+  else if (effect === 'confetti') createConfettiEffect();
+}
+
+function animateCard(animationName) {
+  const card = document.getElementById('game-card');
+  if(!card) return;
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  if (animationName === 'bounceIn') card.classList.add('anim-bounceIn');
+}
+
+function createConfettiEffect() {
+  const container = document.getElementById('card-stage');
+  if(!container) return;
+  const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d'];
+  for (let i = 0; i < 30; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.position = 'absolute';
+    confetti.style.width = '8px';
+    confetti.style.height = '8px';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.top = '-10px';
+    confetti.style.zIndex = '10';
+    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    container.appendChild(confetti);
+    const animationTarget = (Math.random() * 200) + 50;
+    const duration = (Math.random() * 1) + 0.5;
+    confetti.animate([
+      { transform: `translate3d(0,0,0) rotate(0)` },
+      { transform: `translate3d(${Math.random() * 50 - 25}px, ${animationTarget}px, 0) rotate(${Math.random() * 360}deg)` }
+    ], { duration: duration * 1000, easing: 'cubic-bezier(.37,0,.63,1)', fill: 'forwards' });
+    setTimeout(() => { confetti.remove(); }, duration * 1000);
+  }
+}
 </script>
+
 </body>
 </html>
