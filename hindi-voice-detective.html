@@ -712,6 +712,7 @@ let turnCount = 0;
 let preferredInputLanguage = 'hindi';
 let awaitingLanguageChoice = false;
 let storyJournal = [];
+let recognitionNetworkRetryCount = 0;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1151,6 +1152,7 @@ function initRecognition() {
   recognition.maxAlternatives = 1;
 
   recognition.onstart = () => {
+    recognitionNetworkRetryCount = 0;
     document.getElementById('voice-label').textContent = '// LISTENING...';
     document.getElementById('voice-transcript').textContent = '...';
   };
@@ -1160,15 +1162,40 @@ function initRecognition() {
     const transcript = result[0].transcript;
     document.getElementById('voice-transcript').textContent = transcript;
     if (result.isFinal) {
+      recognitionNetworkRetryCount = 0;
       handleRecognizedSpeech(transcript);
     }
   };
 
   recognition.onerror = (event) => {
     console.error('Recognition error:', event.error);
-    document.getElementById('voice-transcript').textContent = 
-      event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
-    document.getElementById('voice-transcript').classList.add('error');
+    const transcriptEl = document.getElementById('voice-transcript');
+    transcriptEl.classList.add('error');
+
+    if (event.error === 'no-speech') {
+      transcriptEl.textContent = 'No speech detected. Try again.';
+    } else if (event.error === 'network') {
+      const insecureContext = location.protocol === 'file:' || (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1');
+      if (insecureContext) {
+        transcriptEl.textContent = 'Speech recognition needs HTTPS or localhost. Open this app via localhost/https.';
+      } else if (recognitionNetworkRetryCount < 1) {
+        recognitionNetworkRetryCount += 1;
+        transcriptEl.textContent = 'Network issue detected. Retrying mic automatically...';
+        addToScene('system', '⚠ Speech recognition network issue. Auto-retrying once.');
+        stopRecording();
+        setTimeout(() => {
+          if (!isRecording) startRecording();
+        }, 700);
+        return;
+      } else {
+        transcriptEl.textContent = 'Network issue while recognizing speech. Check internet and click mic again.';
+      }
+    } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      transcriptEl.textContent = 'Mic permission denied. Allow microphone access in browser settings.';
+    } else {
+      transcriptEl.textContent = `Speech error: ${event.error}`;
+    }
+
     stopRecording();
   };
 
@@ -1197,7 +1224,15 @@ function startRecording() {
   document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
     ? 'English or Hindi?'
     : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (e) {
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+    document.getElementById('voice-transcript').classList.add('error');
+    document.getElementById('voice-transcript').textContent = 'Microphone start failed. Please click mic again.';
+  }
 }
 
 function stopRecording() {

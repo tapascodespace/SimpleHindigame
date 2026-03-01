@@ -719,6 +719,7 @@ let isPlaying = false;
 let turnCount = 0;
 let preferredInputLanguage = 'hindi';
 let storyJournal = [];
+let recognitionNetworkRetryCount = 0;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1201,6 +1202,7 @@ function initRecognition() {
   recognition.maxAlternatives = 1;
 
   recognition.onstart = () => {
+    recognitionNetworkRetryCount = 0;
     document.getElementById('voice-label').textContent = '// LISTENING...';
     document.getElementById('voice-transcript').textContent = '...';
   };
@@ -1210,6 +1212,7 @@ function initRecognition() {
     const transcript = result[0].transcript;
     document.getElementById('voice-transcript').textContent = transcript;
     if (result.isFinal) {
+      recognitionNetworkRetryCount = 0;
       handleRecognizedSpeech(transcript);
     }
   };
@@ -1222,8 +1225,21 @@ function initRecognition() {
     if (event.error === 'no-speech') {
       transcriptEl.textContent = 'No speech detected. Try again.';
     } else if (event.error === 'network') {
-      transcriptEl.textContent = 'Network issue while recognizing speech. Check internet and click mic again.';
-      addToScene('system', '⚠ Speech recognition network issue. Retrying usually works once connection stabilizes.');
+      const insecureContext = location.protocol === 'file:' || (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1');
+      if (insecureContext) {
+        transcriptEl.textContent = 'Speech recognition needs HTTPS or localhost. Open this app via localhost/https.';
+      } else if (recognitionNetworkRetryCount < 1) {
+        recognitionNetworkRetryCount += 1;
+        transcriptEl.textContent = 'Network issue detected. Retrying mic automatically...';
+        addToScene('system', '⚠ Speech recognition network issue. Auto-retrying once.');
+        stopRecording();
+        setTimeout(() => {
+          if (!isRecording) startRecording();
+        }, 700);
+        return;
+      } else {
+        transcriptEl.textContent = 'Network issue while recognizing speech. Check internet and click mic again.';
+      }
     } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
       transcriptEl.textContent = 'Mic permission denied. Allow microphone access in browser settings.';
     } else {
@@ -1254,7 +1270,15 @@ function startRecording() {
   document.getElementById('voice-label').textContent = modeLabel;
   document.getElementById('voice-transcript').classList.remove('error');
   document.getElementById('voice-transcript').textContent = preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...';
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (e) {
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+    document.getElementById('voice-transcript').classList.add('error');
+    document.getElementById('voice-transcript').textContent = 'Microphone start failed. Please click mic again.';
+  }
 }
 
 function stopRecording() {
