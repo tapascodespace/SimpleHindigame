@@ -6,31 +6,27 @@
 <title>CASE FILE // Voice Detective</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@300;400;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --ink: #ffffff; /* White background */
-    --paper: #000000; /* Black/Dark text instead of light yellow */
-    --paper-dark: #d1d5db; /* Light gray for backgrounds/borders */
-    --sepia: #2563eb; /* Blue accent */
-    --sepia-light: #3b82f6; /* Blue hover */
-    --red: #dc2626; /* Red accent */
-    --red-dim: #991b1b; /* Dim red */
-    --green: #16a34a; /* Green accent */
-    --smoke: rgba(255, 255, 255, 0.9);
-    --glow: 0 0 20px rgba(37, 99, 235, 0.3);
-    --font-display: 'Bebas Neue', 'Space Grotesk', sans-serif;
-    --font-ui: 'Inter', sans-serif;
-    --text-bright: #f8f2de;
-    --text-mid: #ecd9a8;
+    --ink: #1a1209;
+    --paper: #f0e6c8;
+    --paper-dark: #d4c49a;
+    --sepia: #8b6914;
+    --sepia-light: #c49a2a;
+    --red: #c0392b;
+    --red-dim: #7a1f14;
+    --green: #2d6a2d;
+    --smoke: rgba(26,18,9,0.85);
+    --glow: 0 0 20px rgba(196,154,42,0.3);
   }
 
   html, body {
     height: 100%;
     background: var(--ink);
-    font-family: var(--font-ui);
+    font-family: 'Rajdhani', sans-serif;
     overflow: hidden;
   }
 
@@ -88,7 +84,7 @@
   }
 
   .case-stamp {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 11px;
     letter-spacing: 4px;
     color: var(--sepia);
@@ -96,7 +92,7 @@
   }
 
   .setup-title {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 42px;
     color: var(--ink);
     line-height: 1;
@@ -104,7 +100,7 @@
   }
 
   .setup-sub {
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 12px;
     color: var(--sepia);
     margin-bottom: 32px;
@@ -145,7 +141,7 @@
     background: var(--ink);
     color: var(--sepia-light);
     border: 2px solid var(--sepia);
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 16px;
     letter-spacing: 3px;
     padding: 14px;
@@ -164,9 +160,9 @@
   .start-btn:active { transform: translateY(1px); }
 
   .setup-hint {
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 11px;
-    color: #a58a56;
+    color: #8a7040;
     margin-top: 16px;
     text-align: center;
     line-height: 1.6;
@@ -204,7 +200,7 @@
   }
 
   .header-title {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     color: var(--sepia-light);
     font-size: 20px;
     letter-spacing: 4px;
@@ -226,14 +222,14 @@
   }
 
   .header-case {
-    font-family: var(--font-ui);
-    color: var(--text-mid);
+    font-family: 'Courier Prime', monospace;
+    color: var(--sepia);
     font-size: 12px;
     letter-spacing: 2px;
   }
 
   .header-lang {
-    font-family: var(--font-ui);
+    font-family: 'Rajdhani', sans-serif;
     font-size: 12px;
     color: var(--green);
     letter-spacing: 2px;
@@ -251,7 +247,7 @@
     background: transparent;
     color: var(--sepia-light);
     border: 1px solid var(--sepia);
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 10px;
     letter-spacing: 2px;
     padding: 5px 10px;
@@ -276,7 +272,7 @@
   }
 
   .panel-header {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 11px;
     letter-spacing: 3px;
     color: var(--sepia);
@@ -286,14 +282,14 @@
   }
 
   .evidence-item {
-    background: #f1f5f9;
+    background: #1a1209;
     border: 1px solid #2a1f0a;
     border-left: 3px solid var(--sepia);
     padding: 12px;
     margin-bottom: 12px;
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 12px;
-    color: var(--text-mid);
+    color: #a0845a;
     line-height: 1.6;
     animation: slide-in 0.4s ease;
   }
@@ -307,34 +303,6 @@
     margin-bottom: 4px;
   }
 
-  .voice-log-wrap {
-    margin-top: 18px;
-    border-top: 1px solid #2a1f0a;
-    padding-top: 12px;
-  }
-
-  .voice-log-list {
-    max-height: 220px;
-    overflow-y: auto;
-    padding-right: 4px;
-  }
-
-  .voice-log-item {
-    background: #f1f5f9;
-    border: 1px solid #2a1f0a;
-    padding: 10px;
-    margin-bottom: 8px;
-    font-family: var(--font-ui);
-    font-size: 11px;
-    line-height: 1.5;
-    color: var(--text-mid);
-  }
-
-  .voice-log-item strong {
-    color: var(--text-bright);
-    font-weight: 700;
-  }
-
   @keyframes slide-in {
     from { opacity: 0; transform: translateX(-10px); }
     to { opacity: 1; transform: translateX(0); }
@@ -343,7 +311,7 @@
   /* STORY PANEL */
   .story-panel {
     grid-area: story;
-    background: #ffffff;
+    background: #0e0a04;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -353,83 +321,9 @@
   .story-scene {
     flex: 1;
     overflow-y: auto;
-    padding: 20px 24px;
+    padding: 32px;
     scrollbar-width: thin;
     scrollbar-color: var(--sepia) transparent;
-  }
-
-  .map-wrap {
-    padding: 18px 24px 0;
-    border-bottom: 1px solid #1a1209;
-    position: relative;
-  }
-
-  .arena-hud {
-    position: absolute;
-    top: 24px;
-    left: 30px;
-    display: flex;
-    gap: 8px;
-    z-index: 4;
-    pointer-events: none;
-  }
-
-  .hud-pill {
-    background: rgba(20, 13, 6, 0.86);
-    color: #fff2cf;
-    border: 2px solid #7b5b13;
-    border-radius: 12px;
-    padding: 5px 10px;
-    font-size: 10px;
-    letter-spacing: 1px;
-    font-family: var(--font-ui);
-    text-transform: uppercase;
-    box-shadow: 0 4px 0 #3e2d08;
-  }
-
-  .map-toolbar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-  }
-
-  .map-btn {
-    background: linear-gradient(180deg, #2f1f0b, #1a1209);
-    color: #ffe5a4;
-    border: 2px solid #8e6b1b;
-    border-radius: 10px;
-    padding: 6px 10px;
-    font-size: 11px;
-    font-family: var(--font-ui);
-    cursor: pointer;
-    box-shadow: 0 4px 0 #4e360c;
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
-  }
-
-  .map-btn:hover { box-shadow: var(--glow); }
-  .map-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #4e360c; }
-
-  #map-canvas {
-    width: 100%;
-    height: 220px;
-    background: radial-gradient(circle at 40% 30%, #1a1209, #0b0703);
-    border: 1px solid #2a1f0a;
-    image-rendering: pixelated;
-    display: block;
-  }
-
-  #game-screen.impact-shake {
-    animation: arena-shake 0.28s linear;
-  }
-
-  @keyframes arena-shake {
-    0% { transform: translate(0,0); }
-    20% { transform: translate(-3px, 2px); }
-    40% { transform: translate(2px, -2px); }
-    60% { transform: translate(-2px, 1px); }
-    80% { transform: translate(2px, 2px); }
-    100% { transform: translate(0,0); }
   }
 
   .scene-entry {
@@ -443,7 +337,7 @@
   }
 
   .scene-role {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 11px;
     letter-spacing: 3px;
     margin-bottom: 8px;
@@ -454,30 +348,17 @@
   .scene-role.system { color: var(--red); }
 
   .scene-text {
-    font-family: var(--font-ui);
-    font-size: 15px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
     line-height: 1.9;
-    color: var(--text-bright);
+    color: var(--paper-dark);
     max-width: 680px;
-    font-weight: 500;
   }
 
   .scene-text.hindi {
-    color: #9be39b;
+    color: #7ab87a;
     font-style: italic;
     font-size: 13px;
-  }
-
-  .spoken-word {
-    transition: color 0.12s ease, text-shadow 0.12s ease, background 0.12s ease;
-    border-radius: 4px;
-    padding: 0 2px;
-  }
-
-  .spoken-word.active {
-    color: #fffbd0;
-    text-shadow: 0 0 14px rgba(255, 247, 190, 0.8);
-    background: rgba(255, 247, 190, 0.14);
   }
 
   /* Typewriter cursor */
@@ -495,7 +376,7 @@
     justify-content: center;
     gap: 4px;
     padding: 16px 32px;
-    background: #ffffff;
+    background: #0e0a04;
     border-top: 1px solid #1a1209;
   }
 
@@ -525,7 +406,7 @@
   }
 
   .suspect-card {
-    background: #f1f5f9;
+    background: #1a1209;
     border: 1px solid #2a1f0a;
     padding: 12px;
     margin-bottom: 12px;
@@ -533,14 +414,14 @@
   }
 
   .suspect-name {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 13px;
     color: var(--paper-dark);
     margin-bottom: 4px;
   }
 
   .suspect-status {
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 11px;
     letter-spacing: 1px;
   }
@@ -564,97 +445,6 @@
 
   .guilt-fill.high { background: var(--red); }
 
-  .asset-controls {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .asset-controls select {
-    background: #f1f5f9;
-    color: var(--text-bright);
-    border: 1px solid #2a1f0a;
-    padding: 6px;
-    font-size: 11px;
-    font-family: var(--font-ui);
-  }
-
-  .asset-spinner {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    font-size: 11px;
-    color: var(--text-mid);
-    font-family: var(--font-ui);
-  }
-
-  .asset-spinner.active { display: flex; }
-
-  .spinner-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--sepia-light);
-    animation: pulse-red 1s infinite;
-  }
-
-  .asset-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .asset-slot {
-    background: #f1f5f9;
-    border: 1px solid #2a1f0a;
-    padding: 6px;
-  }
-
-  .asset-thumb {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #0f0904;
-    border: 1px dashed #3a2d12;
-    object-fit: contain;
-    display: block;
-  }
-
-  .asset-apply {
-    margin-top: 6px;
-    width: 100%;
-    background: #120d06;
-    color: var(--sepia-light);
-    border: 1px solid var(--sepia);
-    padding: 5px;
-    font-size: 10px;
-    font-family: var(--font-ui);
-    cursor: pointer;
-  }
-
-  .asset-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 6px;
-  }
-
-  .asset-refine {
-    width: 100%;
-    background: #120d06;
-    color: var(--text-mid);
-    border: 1px solid #2a1f0a;
-    padding: 5px;
-    font-size: 10px;
-    font-family: var(--font-ui);
-    cursor: pointer;
-  }
-
-  .asset-refine:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .asset-apply:disabled { opacity: 0.4; cursor: not-allowed; }
-
   /* FOOTER — Voice Control */
   .game-footer {
     grid-area: footer;
@@ -670,7 +460,7 @@
   .voice-btn {
     width: 52px; height: 52px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: #1a1209;
     border: 2px solid var(--sepia);
     cursor: pointer;
     display: flex;
@@ -706,7 +496,7 @@
   }
 
   .voice-status-label {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 11px;
     letter-spacing: 3px;
     color: var(--sepia);
@@ -714,9 +504,9 @@
   }
 
   .voice-transcript {
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 13px;
-    color: #b7f5b7;
+    color: #7ab87a;
     min-height: 20px;
     font-style: italic;
   }
@@ -724,47 +514,11 @@
   .voice-transcript.error { color: var(--red); }
 
   .voice-hint {
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 11px;
-    color: #94a3b8;
+    color: #4a3820;
     text-align: right;
     line-height: 1.6;
-  }
-
-  .long-mode-toggle {
-    background: #f1f5f9;
-    color: var(--sepia-light);
-    border: 1px solid var(--sepia);
-    padding: 8px 10px;
-    font-size: 10px;
-    letter-spacing: 1px;
-    font-family: var(--font-ui);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .long-mode-toggle.active {
-    border-color: var(--green);
-    color: #a9f5a9;
-    box-shadow: 0 0 14px rgba(74, 230, 74, 0.2);
-  }
-
-  .skip-mode-toggle {
-    background: #f1f5f9;
-    color: var(--sepia-light);
-    border: 1px solid var(--sepia);
-    padding: 8px 10px;
-    font-size: 10px;
-    letter-spacing: 1px;
-    font-family: var(--font-ui);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .skip-mode-toggle.active {
-    border-color: var(--red);
-    color: #ffb3ad;
-    box-shadow: 0 0 14px rgba(192, 57, 43, 0.24);
   }
 
   /* ======= LOADING / THINKING ======= */
@@ -796,13 +550,13 @@
     text-align: center;
     padding: 60px;
     border: 3px solid var(--sepia);
-    background: #ffffff;
+    background: #0e0a04;
     max-width: 480px;
     box-shadow: var(--glow);
   }
 
   .outcome-title {
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 48px;
     color: var(--sepia-light);
     letter-spacing: 6px;
@@ -810,7 +564,7 @@
   }
 
   .outcome-sub {
-    font-family: var(--font-ui);
+    font-family: 'Courier Prime', monospace;
     font-size: 14px;
     color: var(--paper-dark);
     line-height: 1.9;
@@ -821,7 +575,7 @@
     background: transparent;
     color: var(--sepia-light);
     border: 2px solid var(--sepia);
-    font-family: var(--font-display);
+    font-family: 'Special Elite', serif;
     font-size: 14px;
     letter-spacing: 3px;
     padding: 12px 32px;
@@ -847,8 +601,7 @@
       grid-template-areas: "header" "story" "clues" "footer";
     }
     .evidence-panel { display: none; }
-    .clues-panel { max-height: 260px; }
-    #map-canvas { height: 160px; }
+    .clues-panel { max-height: 180px; }
   }
 </style>
 </head>
@@ -896,21 +649,19 @@
         A jeweled pendant — the Star of Jaipur — has vanished from the Maharaja's locked vault.
       </div>
     </div>
-    <div class="voice-log-wrap">
-      <div class="panel-header">// VOICE LOG</div>
-      <div class="voice-log-list" id="voice-log-list"></div>
-    </div>
   </aside>
 
   <!-- Story Center -->
   <main class="story-panel">
-    <!-- wave bars injected by JS -->
+    <div class="story-scene" id="story-scene"></div>
+    <div class="wave-container" id="wave-container">
+      <!-- wave bars injected by JS -->
     </div>
   </main>
 
-  <!-- Generative Assets Panel -->
+  <!-- Suspects Panel -->
   <aside class="clues-panel">
-    <div class="panel-header" style="margin-top:18px;">// SUSPECTS</div>
+    <div class="panel-header">// SUSPECTS</div>
     <div id="suspects-list"></div>
   </aside>
 
@@ -925,15 +676,13 @@
       </svg>
     </button>
     <div class="voice-status">
-      <div class="voice-status-label" id="voice-label">// READY: AUTO LANGUAGE DETECT</div>
-      <div class="voice-transcript" id="voice-transcript">Speak in Hindi, English, or Hinglish...</div>
+      <div class="voice-status-label" id="voice-label">// READY: CHOOSE LANGUAGE EACH TURN</div>
+      <div class="voice-transcript" id="voice-transcript">The detective will ask: English or Hindi?</div>
     </div>
     <div class="voice-hint">
       Detective speaks in English<br>
-      <span style="color:#2a1f0a">Auto-detect voice input + asset generation</span>
+      <span style="color:#2a1f0a">You can answer in English or Hindi</span>
     </div>
-    <button class="skip-mode-toggle" id="skip-mode-toggle" onclick="toggleSkipMode()">SKIP DIALOGUE: OFF</button>
-    <button class="long-mode-toggle" id="long-mode-toggle" onclick="toggleLongMode()">LONG MODE: OFF</button>
   </footer>
 
 </div>
@@ -960,46 +709,9 @@ let turnCount = 0;
 let preferredInputLanguage = 'hindi';
 let awaitingLanguageChoice = false;
 let storyJournal = [];
-let recognitionRetryCount = 0;
-const MAX_RECOGNITION_RETRIES = 1;
-let mediaRecorder = null;
-let mediaStream = null;
-let recordedChunks = [];
-let recordingMode = null;
-let longNarrationMode = false;
-let lastEnglishAction = '';
-let lastAssetPrompt = '';
-let generatedAssets = Array.from({ length: 4 }, () => ({ url: '', prompt: '' }));
-let nextAssetSlot = 0;
-let mapCanvas = null;
-let mapCtx = null;
-let placedAssets = [];
-let mapLoopStarted = false;
-let assetCache = {};
-let skipDialogueMode = false;
-let activeTypewriterState = null;
-let activeNarrationAudio = null;
-let activeNarrationCleanup = null;
-let arenaScore = 0;
-let arenaCombo = 1;
-let arenaStatus = 'ready';
-let comboTimeout = null;
-let arenaParticles = [];
-let mapFlash = null;
-let audioCtx = null;
-const gameplayState = {
-  hero: { x: 120, y: 210, tx: 120, ty: 210, jumpUntil: 0 },
-  enemy: { active: false, x: 680, y: 190, hp: 0, maxHp: 0, fleeingUntil: 0 },
-  loot: [],
-  buildings: { hut: 0, tower: 0, pulseUntil: 0, pulseTarget: '' },
-  resources: { coins: 0, wood: 0 },
-  areaIndex: 1,
-  inBattle: false
-};
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
-const ASSET_CACHE_KEY = 'voice_detective_asset_cache_v1';
 const CASE_SCENARIO = `You are a world-weary noir detective in 1930s Jaipur, India. 
 The case: The legendary "Star of Jaipur" — a priceless jeweled pendant — has vanished from the Maharaja's locked vault overnight.
 Three suspects, all present at last night's palace dinner:
@@ -1007,9 +719,11 @@ Three suspects, all present at last night's palace dinner:
 2. MEERA DEVI — the Maharaja's niece, secretly engaged to a rival royal house
 3. RAJAN SETH — the palace treasurer, been skimming accounts for years
 
-You narrate the investigation like a classic noir detective. The player speaks in Hindi — you understand Hindi perfectly and respond in English in character.
-Keep responses to 2-3 short punchy sentences max. Be dramatic and atmospheric.
-The player's instruction may come translated into English from Hindi speech. Treat that translated English as exact intent.
+You narrate the investigation like a classic noir detective. Keep responses to 2-3 short punchy sentences max. Be dramatic and atmospheric.
+
+CRITICAL INSTRUCTION: You MUST reply in the exact same language the user spoke in.
+- If the player speaks in Hindi, you MUST narrate/reply entirely in Hindi.
+- If the player speaks in English, you MUST narrate/reply entirely in English.
 Maintain a continuous storyline that branches based on the player's latest choices and discoveries.
 When the player asks to investigate someone, reveal a new clue. 
 When they ask to accuse someone, evaluate if they have enough evidence.
@@ -1039,813 +753,6 @@ const SUSPECTS = [
 let evidenceCount = 1;
 
 loadJournal();
-loadAssetCache();
-
-function loadAssetCache() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(ASSET_CACHE_KEY) || '{}');
-    assetCache = parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    assetCache = {};
-  }
-}
-
-function saveAssetCache() {
-  const entries = Object.entries(assetCache)
-    .sort((a, b) => (b[1]?.at || 0) - (a[1]?.at || 0))
-    .slice(0, 80);
-  assetCache = Object.fromEntries(entries);
-  localStorage.setItem(ASSET_CACHE_KEY, JSON.stringify(assetCache));
-}
-
-function makeAssetCacheKey(prompt, style, size) {
-  return `${style}|${size}|${String(prompt || '').trim().toLowerCase()}`;
-}
-
-function blobToDataUrl(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(String(reader.result || ''));
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-function toggleLongMode() {
-  longNarrationMode = !longNarrationMode;
-  const btn = document.getElementById('long-mode-toggle');
-  if (!btn) return;
-  btn.classList.toggle('active', longNarrationMode);
-  btn.textContent = `LONG MODE: ${longNarrationMode ? 'ON' : 'OFF'}`;
-}
-
-function skipCurrentNarration() {
-  if (activeTypewriterState) {
-    clearInterval(activeTypewriterState.interval);
-    activeTypewriterState.element.textContent = activeTypewriterState.text;
-    activeTypewriterState.element.classList.remove('typing-cursor');
-    const resolver = activeTypewriterState.resolve;
-    activeTypewriterState = null;
-    resolver();
-  }
-
-  if (activeNarrationAudio && activeNarrationCleanup) {
-    try { activeNarrationAudio.pause(); } catch (_) {}
-    const cleanup = activeNarrationCleanup;
-    activeNarrationAudio = null;
-    activeNarrationCleanup = null;
-    cleanup();
-  }
-}
-
-function toggleSkipMode() {
-  skipDialogueMode = !skipDialogueMode;
-  const btn = document.getElementById('skip-mode-toggle');
-  if (!btn) return;
-  btn.classList.toggle('active', skipDialogueMode);
-  btn.textContent = `SKIP DIALOGUE: ${skipDialogueMode ? 'ON' : 'OFF'}`;
-
-  if (skipDialogueMode) {
-    skipCurrentNarration();
-  }
-}
-
-function updateArenaHud() {
-  const scoreEl = document.getElementById('hud-score');
-  const comboEl = document.getElementById('hud-combo');
-  const statusEl = document.getElementById('hud-status');
-  const resourceEl = document.getElementById('hud-resource');
-  const enemyEl = document.getElementById('hud-enemy');
-  if (scoreEl) scoreEl.textContent = `Score: ${arenaScore}`;
-  if (comboEl) comboEl.textContent = `Combo: x${arenaCombo}`;
-  if (statusEl) statusEl.textContent = `Status: ${arenaStatus}`;
-  if (resourceEl) resourceEl.textContent = `Coins: ${gameplayState.resources.coins} | Wood: ${gameplayState.resources.wood}`;
-  if (enemyEl) enemyEl.textContent = gameplayState.enemy.active ? `Enemy HP: ${Math.max(0, gameplayState.enemy.hp)}` : 'Enemy HP: --';
-}
-
-function setArenaStatus(text) {
-  arenaStatus = text;
-  updateArenaHud();
-}
-
-function bumpCombo() {
-  arenaCombo = Math.min(9, arenaCombo + 1);
-  if (comboTimeout) clearTimeout(comboTimeout);
-  comboTimeout = setTimeout(() => {
-    arenaCombo = 1;
-    updateArenaHud();
-  }, 5500);
-}
-
-function addScore(basePoints) {
-  arenaScore += Math.max(1, Math.floor(basePoints * arenaCombo));
-  updateArenaHud();
-}
-
-function triggerScreenShake() {
-  const screen = document.getElementById('game-screen');
-  if (!screen) return;
-  screen.classList.remove('impact-shake');
-  void screen.offsetWidth;
-  screen.classList.add('impact-shake');
-  setTimeout(() => screen.classList.remove('impact-shake'), 300);
-}
-
-function flashMap(color, duration = 180) {
-  mapFlash = {
-    color,
-    until: performance.now() + duration
-  };
-}
-
-function emitParticles(x, y, color, count = 16) {
-  for (let i = 0; i < count; i++) {
-    arenaParticles.push({
-      x,
-      y,
-      vx: (Math.random() - 0.5) * 3.2,
-      vy: (Math.random() - 0.5) * 3.2,
-      life: 0,
-      maxLife: 36 + Math.random() * 18,
-      size: 2 + Math.random() * 3,
-      color
-    });
-  }
-}
-
-function ensureAudioContext() {
-  if (!audioCtx) {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    audioCtx = new Ctx();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {});
-  }
-  return audioCtx;
-}
-
-function playSfx(type) {
-  const ctx = ensureAudioContext();
-  if (!ctx) return;
-  const now = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  if (type === 'listen') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(620, now);
-    osc.frequency.exponentialRampToValueAtTime(780, now + 0.05);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-    osc.start(now);
-    osc.stop(now + 0.09);
-    return;
-  }
-
-  if (type === 'error') {
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(220, now);
-    osc.frequency.exponentialRampToValueAtTime(140, now + 0.14);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.09, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-    osc.start(now);
-    osc.stop(now + 0.17);
-    return;
-  }
-
-  if (type === 'impact') {
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.13, now + 0.005);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-    osc.start(now);
-    osc.stop(now + 0.11);
-    return;
-  }
-
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(540, now);
-  osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.07, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-  osc.start(now);
-  osc.stop(now + 0.13);
-}
-
-function runActionJuice(actionText) {
-  const t = String(actionText || '').toLowerCase();
-  const centerX = mapCanvas ? mapCanvas.width * 0.5 : 450;
-  const centerY = mapCanvas ? mapCanvas.height * 0.5 : 150;
-
-  if (/attack|strike|hit|slash|fireball|aakraman|आक्रमण/.test(t)) {
-    addScore(12);
-    bumpCombo();
-    
-    triggerScreenShake();
-    flashMap('rgba(220,60,40,0.12)', 180);
-    emitParticles(centerX, centerY, '#ff7043', 22);
-    playSfx('impact');
-    return;
-  }
-
-  if (/defend|shield|raksha|रक्षा/.test(t)) {
-    addScore(8);
-    bumpCombo();
-    
-    flashMap('rgba(80,140,255,0.14)', 220);
-    emitParticles(centerX, centerY, '#8bb3ff', 16);
-    playSfx('success');
-    return;
-  }
-
-  if (/magic|spell|jaadu|जादू/.test(t)) {
-    addScore(10);
-    bumpCombo();
-    
-    flashMap('rgba(182,92,255,0.14)', 220);
-    emitParticles(centerX, centerY, '#d88cff', 24);
-    playSfx('success');
-    return;
-  }
-
-  addScore(5);
-  
-  emitParticles(centerX, centerY, '#f9c74f', 10);
-  playSfx('success');
-}
-
-function maybeSpawnEnemyEncounter() {
-  if (gameplayState.enemy.active) return false;
-  if (Math.random() < 0.45) {
-    gameplayState.enemy.active = true;
-    gameplayState.enemy.maxHp = 42 + Math.floor(Math.random() * 18);
-    gameplayState.enemy.hp = gameplayState.enemy.maxHp;
-    gameplayState.enemy.x = 640 + Math.random() * 120;
-    gameplayState.enemy.y = 165 + Math.random() * 60;
-    gameplayState.inBattle = true;
-    
-    emitParticles(gameplayState.enemy.x, gameplayState.enemy.y, '#ff8d70', 18);
-    updateArenaHud();
-    return true;
-  }
-  return false;
-}
-
-function moveHeroBy(dx, dy) {
-  const nx = Math.max(40, Math.min(mapCanvas.width - 90, gameplayState.hero.tx + dx));
-  const ny = Math.max(90, Math.min(mapCanvas.height - 70, gameplayState.hero.ty + dy));
-  gameplayState.hero.tx = nx;
-  gameplayState.hero.ty = ny;
-}
-
-function openLootDrop(amount = 3) {
-  for (let i = 0; i < amount; i++) {
-    gameplayState.loot.push({
-      x: 420 + Math.random() * 160,
-      y: 160 + Math.random() * 110,
-      value: 2 + Math.floor(Math.random() * 4),
-      born: performance.now()
-    });
-  }
-  emitParticles(500, 200, '#ffd15c', 20);
-}
-
-function collectNearbyLoot() {
-  let collected = 0;
-  const hx = gameplayState.hero.x + 18;
-  const hy = gameplayState.hero.y + 28;
-  gameplayState.loot = gameplayState.loot.filter(l => {
-    const d = Math.hypot(l.x - hx, l.y - hy);
-    if (d < 220) {
-      collected += l.value;
-      return false;
-    }
-    return true;
-  });
-
-  if (collected > 0) {
-    gameplayState.resources.coins += collected;
-    gameplayState.resources.wood += Math.max(1, Math.floor(collected / 2));
-    addScore(collected * 2);
-    bumpCombo();
-    
-    emitParticles(gameplayState.hero.x + 20, gameplayState.hero.y + 18, '#ffe08a', 20);
-    playSfx('success');
-    updateArenaHud();
-    return `You scoop up ${collected} coins and salvage timber from the wreckage.`;
-  }
-  
-  return 'No loot close enough — move toward the drop first.';
-}
-
-function buildStructure(structure) {
-  if (structure === 'hut') {
-    if (gameplayState.resources.coins < 8 || gameplayState.resources.wood < 4) {
-      return 'Not enough resources to build a hut. You need 8 coins and 4 wood.';
-    }
-    gameplayState.resources.coins -= 8;
-    gameplayState.resources.wood -= 4;
-    gameplayState.buildings.hut += 1;
-    gameplayState.buildings.pulseUntil = performance.now() + 900;
-    gameplayState.buildings.pulseTarget = 'hut';
-    addScore(18);
-    bumpCombo();
-    
-    emitParticles(180, 110, '#9fdc9f', 18);
-    updateArenaHud();
-    return `A sturdy hut rises from the dust. Hut level is now ${gameplayState.buildings.hut}.`;
-  }
-
-  if (structure === 'tower') {
-    if (gameplayState.resources.coins < 12 || gameplayState.resources.wood < 7) {
-      return 'Not enough resources to build a tower. You need 12 coins and 7 wood.';
-    }
-    gameplayState.resources.coins -= 12;
-    gameplayState.resources.wood -= 7;
-    gameplayState.buildings.tower += 1;
-    gameplayState.buildings.pulseUntil = performance.now() + 1000;
-    gameplayState.buildings.pulseTarget = 'tower';
-    addScore(24);
-    bumpCombo();
-    
-    emitParticles(260, 95, '#a2c7ff', 20);
-    updateArenaHud();
-    return `Your watchtower gains a new floor. Tower level is now ${gameplayState.buildings.tower}.`;
-  }
-
-  return 'Unknown structure. Try “build hut” or “build tower”.';
-}
-
-function applyCombatMove(kind) {
-  if (!gameplayState.enemy.active) {
-    maybeSpawnEnemyEncounter();
-    if (!gameplayState.enemy.active) {
-      return 'You swing into empty air. No enemy in sight — keep exploring.';
-    }
-  }
-
-  if (kind === 'defend') {
-    addScore(5);
-    
-    flashMap('rgba(90,150,255,0.12)', 220);
-    emitParticles(gameplayState.hero.x + 26, gameplayState.hero.y + 22, '#8eb7ff', 14);
-    playSfx('success');
-    return 'Shield up. You brace for impact and hold the line.';
-  }
-
-  if (kind === 'flee') {
-    if (gameplayState.enemy.active) {
-      gameplayState.enemy.fleeingUntil = performance.now() + 900;
-      gameplayState.enemy.active = false;
-      gameplayState.inBattle = false;
-      
-      emitParticles(700, 180, '#bfbfbf', 18);
-      playSfx('impact');
-      updateArenaHud();
-      return 'The enemy panics and bolts in a cloud of dust.';
-    }
-    return 'No active enemy to flee from.';
-  }
-
-  const damage = 12 + Math.floor(Math.random() * 9);
-  gameplayState.enemy.hp -= damage;
-  triggerScreenShake();
-  flashMap('rgba(220,60,40,0.15)', 180);
-  emitParticles(gameplayState.enemy.x + 10, gameplayState.enemy.y + 16, '#ff8a66', 20);
-  playSfx('impact');
-  addScore(damage);
-  bumpCombo();
-
-  if (gameplayState.enemy.hp <= 0) {
-    gameplayState.enemy.active = false;
-    gameplayState.inBattle = false;
-    gameplayState.hero.jumpUntil = performance.now() + 900;
-    
-    openLootDrop(4 + Math.floor(Math.random() * 3));
-    updateArenaHud();
-    return `Direct hit for ${damage}. Enemy defeated! Coins scatter across the field.`;
-  }
-
-  
-  updateArenaHud();
-  return `Direct hit for ${damage}. Enemy still stands with ${Math.max(0, gameplayState.enemy.hp)} HP.`;
-}
-
-function parseVoiceGameplayCommand(englishIntent, rawText) {
-  const normalized = `${String(englishIntent || '')} ${String(rawText || '')}`.toLowerCase();
-
-  if (/move north|go north|north|ऊपर|उत्तर/.test(normalized)) {
-    moveHeroBy(0, -38);
-    
-    addScore(3);
-    maybeSpawnEnemyEncounter();
-    updateArenaHud();
-    return { handled: true, line: 'You march north through torchlit corridors.', actionTag: 'move north' };
-  }
-  if (/move south|go south|south|नीचे|दक्षिण/.test(normalized)) {
-    moveHeroBy(0, 38);
-    
-    addScore(3);
-    maybeSpawnEnemyEncounter();
-    updateArenaHud();
-    return { handled: true, line: 'You head south, boots echoing over wet stone.', actionTag: 'move south' };
-  }
-  if (/move east|go east|east|पूरब|पूर्व/.test(normalized)) {
-    moveHeroBy(42, 0);
-    
-    addScore(3);
-    maybeSpawnEnemyEncounter();
-    updateArenaHud();
-    return { handled: true, line: 'You slip east and scan the shadows.', actionTag: 'move east' };
-  }
-  if (/move west|go west|west|पश्चिम/.test(normalized)) {
-    moveHeroBy(-42, 0);
-    
-    addScore(3);
-    maybeSpawnEnemyEncounter();
-    updateArenaHud();
-    return { handled: true, line: 'You drift west, watching every window.', actionTag: 'move west' };
-  }
-
-  if (/attack|strike|slash|hit|aakraman|आक्रमण|हमला/.test(normalized)) {
-    return { handled: true, line: applyCombatMove('attack'), actionTag: 'attack' };
-  }
-  if (/defend|block|shield|raksha|रक्षा/.test(normalized)) {
-    return { handled: true, line: applyCombatMove('defend'), actionTag: 'defend' };
-  }
-  if (/run away|flee|retreat|भागो|bhago/.test(normalized)) {
-    return { handled: true, line: applyCombatMove('flee'), actionTag: 'flee' };
-  }
-
-  if (/loot|collect|pickup|khazana|खजाना|सिक्के/.test(normalized)) {
-    return { handled: true, line: collectNearbyLoot(), actionTag: 'loot' };
-  }
-
-  if (/upgrade tower|build tower|tower/.test(normalized)) {
-    return { handled: true, line: buildStructure('tower'), actionTag: 'build tower' };
-  }
-  if (/build hut|hut|घर|झोपड़ी/.test(normalized)) {
-    return { handled: true, line: buildStructure('hut'), actionTag: 'build hut' };
-  }
-
-  if (/talk|speak|dialogue|बात/.test(normalized)) {
-    
-    addScore(2);
-    return { handled: true, line: 'Your partner whispers: “City lights lie. Footprints do not.”', actionTag: 'talk' };
-  }
-
-  return { handled: false };
-}
-
-function initMapCanvas() {
-  mapCanvas = document.getElementById('map-canvas');
-  if (!mapCanvas) return;
-  mapCtx = mapCanvas.getContext('2d');
-  if (!mapLoopStarted) {
-    mapLoopStarted = true;
-    const loop = () => {
-      drawMapCanvas();
-      requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
-  }
-}
-
-function drawMapCanvas() {
-  if (!mapCtx || !mapCanvas) return;
-  const now = performance.now();
-
-  gameplayState.hero.x += (gameplayState.hero.tx - gameplayState.hero.x) * 0.12;
-  gameplayState.hero.y += (gameplayState.hero.ty - gameplayState.hero.y) * 0.12;
-  mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
-  mapCtx.fillStyle = '#0b0703';
-  mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
-
-  mapCtx.strokeStyle = 'rgba(196,154,42,0.12)';
-  mapCtx.lineWidth = 1;
-  for (let x = 0; x < mapCanvas.width; x += 32) {
-    mapCtx.beginPath();
-    mapCtx.moveTo(x, 0);
-    mapCtx.lineTo(x, mapCanvas.height);
-    mapCtx.stroke();
-  }
-  for (let y = 0; y < mapCanvas.height; y += 32) {
-    mapCtx.beginPath();
-    mapCtx.moveTo(0, y);
-    mapCtx.lineTo(mapCanvas.width, y);
-    mapCtx.stroke();
-  }
-
-  for (const token of placedAssets) {
-    if (token.image && token.image.complete) {
-      const age = now - (token.spawnAt || now);
-      const pop = Math.min(1, Math.max(0.35, age / 220));
-      const bob = Math.sin((now + (token.phase || 0)) / 240) * 2.5;
-      const drawSize = token.size * pop;
-      const offset = (token.size - drawSize) * 0.5;
-
-      mapCtx.fillStyle = 'rgba(0,0,0,0.34)';
-      mapCtx.beginPath();
-      mapCtx.ellipse(token.x + token.size * 0.5, token.y + token.size + 7, token.size * 0.28, token.size * 0.1, 0, 0, Math.PI * 2);
-      mapCtx.fill();
-
-      mapCtx.drawImage(token.image, token.x + offset, token.y + offset + bob, drawSize, drawSize);
-    }
-  }
-
-  // Buildings (simple cartoony blocks)
-  if (gameplayState.buildings.hut > 0) {
-    const pulse = gameplayState.buildings.pulseTarget === 'hut' && gameplayState.buildings.pulseUntil > now ? 1.08 : 1;
-    const w = 64 * pulse;
-    const h = 48 * pulse;
-    mapCtx.fillStyle = '#6e4d2a';
-    mapCtx.fillRect(110 - (w - 64) / 2, 70 - (h - 48) / 2, w, h);
-    mapCtx.fillStyle = '#a8713b';
-    mapCtx.fillRect(105 - (w - 64) / 2, 64 - (h - 48) / 2, w + 10, 10);
-    mapCtx.fillStyle = '#f8e1a2';
-    mapCtx.font = '10px Inter';
-    mapCtx.fillText(`Hut Lv.${gameplayState.buildings.hut}`, 104, 130);
-  }
-
-  if (gameplayState.buildings.tower > 0) {
-    const pulse = gameplayState.buildings.pulseTarget === 'tower' && gameplayState.buildings.pulseUntil > now ? 1.08 : 1;
-    const h = (56 + gameplayState.buildings.tower * 9) * pulse;
-    mapCtx.fillStyle = '#5b5f79';
-    mapCtx.fillRect(220, 120 - (h - 56), 44, h);
-    mapCtx.fillStyle = '#9ca6d0';
-    mapCtx.fillRect(214, 114 - (h - 56), 56, 10);
-    mapCtx.fillStyle = '#cfd8ff';
-    mapCtx.font = '10px Inter';
-    mapCtx.fillText(`Tower Lv.${gameplayState.buildings.tower}`, 204, 136);
-  }
-
-  // Loot on ground
-  for (const loot of gameplayState.loot) {
-    const shimmer = 1 + Math.sin((now + loot.born) / 180) * 0.2;
-    mapCtx.fillStyle = '#ffd35f';
-    mapCtx.beginPath();
-    mapCtx.arc(loot.x, loot.y, 5 * shimmer, 0, Math.PI * 2);
-    mapCtx.fill();
-  }
-
-  // Enemy
-  if (gameplayState.enemy.active) {
-    const bounce = Math.sin(now / 180) * 2;
-    mapCtx.fillStyle = '#b53e36';
-    mapCtx.fillRect(gameplayState.enemy.x, gameplayState.enemy.y + bounce, 34, 34);
-    mapCtx.fillStyle = '#ffe1db';
-    mapCtx.fillRect(gameplayState.enemy.x + 7, gameplayState.enemy.y + 9 + bounce, 6, 6);
-    mapCtx.fillRect(gameplayState.enemy.x + 21, gameplayState.enemy.y + 9 + bounce, 6, 6);
-    mapCtx.fillStyle = '#2b0d0b';
-    mapCtx.fillRect(gameplayState.enemy.x + 10, gameplayState.enemy.y + 22 + bounce, 14, 3);
-  } else if (gameplayState.enemy.fleeingUntil > now) {
-    const t = (gameplayState.enemy.fleeingUntil - now) / 900;
-    mapCtx.fillStyle = `rgba(191,191,191,${Math.max(0, t)})`;
-    mapCtx.beginPath();
-    mapCtx.arc(700 + (1 - t) * 80, 190, 12 * t, 0, Math.PI * 2);
-    mapCtx.fill();
-  }
-
-  // Hero
-  const heroJump = gameplayState.hero.jumpUntil > now ? Math.sin((now / 120)) * 8 : 0;
-  mapCtx.fillStyle = '#2c8ad6';
-  mapCtx.fillRect(gameplayState.hero.x, gameplayState.hero.y - heroJump, 36, 36);
-  mapCtx.fillStyle = '#e7f3ff';
-  mapCtx.fillRect(gameplayState.hero.x + 8, gameplayState.hero.y + 8 - heroJump, 6, 6);
-  mapCtx.fillRect(gameplayState.hero.x + 22, gameplayState.hero.y + 8 - heroJump, 6, 6);
-  mapCtx.fillStyle = '#0f3154';
-  mapCtx.fillRect(gameplayState.hero.x + 10, gameplayState.hero.y + 23 - heroJump, 14, 3);
-
-  if (mapFlash && mapFlash.until > now) {
-    mapCtx.fillStyle = mapFlash.color;
-    mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
-  }
-
-  for (let i = arenaParticles.length - 1; i >= 0; i--) {
-    const particle = arenaParticles[i];
-    particle.life += 1;
-    particle.x += particle.vx;
-    particle.y += particle.vy;
-    particle.vy += 0.02;
-    const alpha = Math.max(0, 1 - particle.life / particle.maxLife);
-    if (alpha <= 0) {
-      arenaParticles.splice(i, 1);
-      continue;
-    }
-    mapCtx.globalAlpha = alpha;
-    mapCtx.fillStyle = particle.color;
-    mapCtx.fillRect(particle.x, particle.y, particle.size, particle.size);
-    mapCtx.globalAlpha = 1;
-  }
-
-}
-
-function initAssetSlots() {
-  for (let i = 0; i < 4; i++) {
-    const thumb = document.getElementById(`asset-thumb-${i}`);
-    const applyBtn = document.getElementById(`asset-apply-${i}`);
-    const refineBtn = document.getElementById(`asset-refine-${i}`);
-    if (thumb) thumb.src = '';
-    if (applyBtn) applyBtn.disabled = true;
-    if (refineBtn) refineBtn.disabled = true;
-  }
-}
-
-function setAssetSpinner(active) {
-  const spinner = document.getElementById('asset-spinner');
-  if (!spinner) return;
-  spinner.classList.toggle('active', active);
-}
-
-function getAssetControls() {
-  const style = document.getElementById('style-select')?.value || 'pixel';
-  const size = Number(document.getElementById('size-select')?.value || 128);
-  return { style, size };
-}
-
-function createFallbackAsset(prompt, size = 128) {
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#1a1209';
-  ctx.fillRect(0, 0, size, size);
-  ctx.strokeStyle = '#c49a2a';
-  ctx.lineWidth = Math.max(2, size / 32);
-  ctx.strokeRect(4, 4, size - 8, size - 8);
-  ctx.fillStyle = '#f8f2de';
-  ctx.font = `${Math.max(12, size / 6)}px Inter, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const label = (prompt || 'ASSET').slice(0, 12).toUpperCase();
-  ctx.fillText(label, size / 2, size / 2);
-  return canvas.toDataURL('image/png');
-}
-
-function setAssetSlot(index, url, prompt) {
-  generatedAssets[index] = { url, prompt };
-  const thumb = document.getElementById(`asset-thumb-${index}`);
-  const applyBtn = document.getElementById(`asset-apply-${index}`);
-  const refineBtn = document.getElementById(`asset-refine-${index}`);
-  if (thumb) {
-    thumb.src = url;
-    thumb.title = prompt;
-  }
-  if (applyBtn) {
-    applyBtn.disabled = !url;
-  }
-  if (refineBtn) {
-    refineBtn.disabled = !url;
-  }
-}
-
-async function generateAssetAndAddToPanel(assetPrompt) {
-  if (!assetPrompt) return;
-  const { style, size } = getAssetControls();
-  const cacheKey = makeAssetCacheKey(assetPrompt, style, size);
-  const slotIndex = nextAssetSlot % 4;
-  nextAssetSlot += 1;
-
-  if (assetCache[cacheKey]?.url) {
-    setAssetSlot(slotIndex, assetCache[cacheKey].url, assetPrompt);
-    return;
-  }
-
-  setAssetSpinner(true);
-  
-
-  try {
-    const response = await fetch('/api/gen_image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: assetPrompt, width: size, height: size, style })
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || 'Generation API unavailable');
-    }
-
-    const blob = await response.blob();
-    if (!blob || blob.size < 128) {
-      throw new Error('Generated image was empty or too small');
-    }
-    const url = await blobToDataUrl(blob);
-    assetCache[cacheKey] = { url, prompt: assetPrompt, at: Date.now() };
-    saveAssetCache();
-    setAssetSlot(slotIndex, url, assetPrompt);
-    
-    playSfx('success');
-  } catch (error) {
-    
-    const fallbackUrl = createFallbackAsset(assetPrompt, size);
-    assetCache[cacheKey] = { url: fallbackUrl, prompt: assetPrompt, at: Date.now() };
-    saveAssetCache();
-    setAssetSlot(slotIndex, fallbackUrl, `${assetPrompt} (fallback)`);
-    
-    playSfx('error');
-  } finally {
-    setAssetSpinner(false);
-  }
-}
-
-async function refineAssetSlot(index) {
-  const asset = generatedAssets[index];
-  if (!asset?.prompt) return;
-  const refinedPrompt = `${asset.prompt}. refine: darker noir lighting, cleaner silhouette, stronger pixel edges.`;
-  await generateAssetAndAddToPanel(refinedPrompt);
-}
-
-function applyAssetSlot(index) {
-  if (!mapCanvas || !mapCtx) return;
-  const asset = generatedAssets[index];
-  if (!asset?.url) return;
-
-  const size = Number(document.getElementById('size-select')?.value || 128);
-  const image = new Image();
-  image.onload = () => {
-    const maxX = Math.max(0, mapCanvas.width - size - 8);
-    const maxY = Math.max(0, mapCanvas.height - size - 8);
-    const x = Math.floor(Math.random() * (maxX + 1));
-    const y = Math.floor(Math.random() * (maxY + 1));
-    placedAssets.push({ image, x, y, size, prompt: asset.prompt, spawnAt: performance.now(), phase: Math.random() * 999 });
-    
-    addScore(6);
-    playSfx('success');
-    drawMapCanvas();
-  };
-  image.src = asset.url;
-}
-
-async function generateAssetFromLastCommand() {
-  const prompt = lastAssetPrompt || (lastEnglishAction ? `${lastEnglishAction}, transparent background, noir style` : 'detective clue icon, noir style, transparent background');
-  await generateAssetAndAddToPanel(prompt);
-}
-
-async function useFallbackKenney() {
-  const { size } = getAssetControls();
-  const slotIndex = nextAssetSlot % 4;
-  nextAssetSlot += 1;
-  const fallback = createFallbackAsset('KENNEY', size);
-  setAssetSlot(slotIndex, fallback, 'Kenney-style fallback asset');
-}
-
-function logVoiceEvent(recognizedText, englishAction, assetPrompt) {
-  const log = document.getElementById('voice-log-list');
-  if (!log) return;
-  const item = document.createElement('div');
-  item.className = 'voice-log-item';
-  item.innerHTML = `<div><strong>Voice:</strong> ${escapeHtml(recognizedText || '')}</div>
-    <div><strong>Action:</strong> ${escapeHtml(englishAction || '')}</div>
-    <div><strong>Asset:</strong> ${escapeHtml(assetPrompt || '')}</div>`;
-  log.prepend(item);
-}
-
-function extractFirstJsonObject(text) {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) return null;
-  try {
-    return JSON.parse(text.slice(start, end + 1));
-  } catch {
-    return null;
-  }
-}
-
-async function buildActionAssetPacket(englishIntent) {
-  const { style, size } = getAssetControls();
-  const system = `You are an asset-prompt-builder for a game.
-Return only valid JSON with keys action and asset_prompt.
-action: one short English action phrase.
-asset_prompt: one short image prompt for game sprite generation.
-Always include style, transparent background, and requested size.`;
-
-  const userMessage = `User command: ${englishIntent}\nStyle: ${style}\nSize: ${size}`;
-
-  try {
-    const raw = await callClaude(system, [{ role: 'user', content: userMessage }], 180);
-    const parsed = extractFirstJsonObject(raw);
-    if (parsed?.action && parsed?.asset_prompt) {
-      return {
-        action: String(parsed.action),
-        asset_prompt: String(parsed.asset_prompt)
-      };
-    }
-  } catch (e) {}
-
-  return {
-    action: englishIntent,
-    asset_prompt: `${size}x${size} ${style} game asset, ${englishIntent}, transparent background`
-  };
-}
 
 // ============================================================
 //  RAIN ANIMATION
@@ -1910,14 +817,8 @@ function startGame() {
   setTimeout(() => {
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('game-screen').classList.add('active');
-    document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
-    arenaScore = 0;
-    arenaCombo = 1;
-    
-    updateArenaHud();
+    document.getElementById('header-lang').textContent = 'INPUT: HINDI';
     logJournal({ kind: 'scene', role: 'system', text: '--- CASE FILE OPENED ---', at: new Date().toISOString(), turn: 0 });
-    initMapCanvas();
-    initAssetSlots();
     initRecognition();
     renderSuspects();
     openingMonologue();
@@ -1980,12 +881,6 @@ function addToScene(role, text, className = '') {
 
 function typeText(element, text, speed = 28) {
   return new Promise(resolve => {
-    if (skipDialogueMode) {
-      element.textContent = text;
-      resolve();
-      return;
-    }
-
     element.classList.add('typing-cursor');
     element.textContent = '';
     let i = 0;
@@ -1994,17 +889,9 @@ function typeText(element, text, speed = 28) {
       if (i >= text.length) {
         clearInterval(interval);
         element.classList.remove('typing-cursor');
-        activeTypewriterState = null;
         resolve();
       }
     }, speed);
-
-    activeTypewriterState = {
-      interval,
-      element,
-      text,
-      resolve
-    };
   });
 }
 
@@ -2053,16 +940,6 @@ function escapeHtml(text) {
     .replace(/'/g, '&#39;');
 }
 
-function highlightWords(targetEl, words, activeIndex) {
-  if (!targetEl || !Array.isArray(words) || words.length === 0) return;
-  targetEl.innerHTML = words
-    .map((word, index) => {
-      const activeClass = index === activeIndex ? 'spoken-word active' : 'spoken-word';
-      return `<span class="${activeClass}">${escapeHtml(word)}</span>`;
-    })
-    .join(' ');
-}
-
 function openStoryJournal() {
   const win = window.open('', '_blank');
   if (!win) {
@@ -2101,7 +978,7 @@ ${entries || '<div class="empty">No entries yet. Start the investigation first.<
 }
 
 // ============================================================
-//  LLM API (Bedrock / Mistral)
+//  CLAUDE API
 // ============================================================
 async function callClaude(systemPrompt, messages, maxTokens = 300) {
   const response = await fetch('/api/claude', {
@@ -2110,7 +987,7 @@ async function callClaude(systemPrompt, messages, maxTokens = 300) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'mistral-large-latest',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: maxTokens,
       system: systemPrompt,
       messages
@@ -2119,7 +996,7 @@ async function callClaude(systemPrompt, messages, maxTokens = 300) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `LLM API error: ${response.status}`);
+    throw new Error(errorData.error || `Claude API error: ${response.status}`);
   }
   const data = await response.json();
   return data.text || '';
@@ -2131,10 +1008,7 @@ async function askClaude(englishIntent, rawInput, inputLanguage) {
     content: `[Input language: ${inputLanguage}] Raw: ${rawInput}\nIntent in English: ${englishIntent}`
   });
 
-  const systemPrompt = longNarrationMode
-    ? `${CASE_SCENARIO}\nLong mode is ON. Use richer narrative continuity and 5-7 concise cinematic sentences.`
-    : `${CASE_SCENARIO}\nLong mode is OFF. Keep to 2-3 short punchy sentences.`;
-  const reply = await callClaude(systemPrompt, conversationHistory, longNarrationMode ? 700 : 320);
+  const reply = await callClaude(CASE_SCENARIO, conversationHistory, 320);
   conversationHistory.push({ role: 'assistant', content: reply });
   return reply;
 }
@@ -2154,14 +1028,9 @@ Return only the translated English sentence.`;
 }
 
 // ============================================================
-//  TTS (Amazon Polly)
+//  ELEVENLABS TTS
 // ============================================================
-async function speakText(text, targetEl = null) {
-  if (skipDialogueMode) {
-    if (targetEl) targetEl.textContent = text;
-    return;
-  }
-
+async function speakText(text) {
   const response = await fetch('/api/tts', {
     method: 'POST',
     headers: {
@@ -2170,7 +1039,7 @@ async function speakText(text, targetEl = null) {
     body: JSON.stringify({
       voiceId: VOICE_ID,
       text: text,
-      model_id: 'eleven_monolingual_v1',
+      model_id: 'eleven_multilingual_v2',
       voice_settings: {
         stability: 0.65,
         similarity_boost: 0.85,
@@ -2182,66 +1051,22 @@ async function speakText(text, targetEl = null) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `TTS error: ${response.status}`);
+    throw new Error(errorData.error || `ElevenLabs error: ${response.status}`);
   }
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
-  const words = text.split(/\s+/).filter(Boolean);
-  let activeWordIndex = 0;
-  let highlightInterval = null;
-
-  const clearHighlight = () => {
-    if (highlightInterval) {
-      clearInterval(highlightInterval);
-      highlightInterval = null;
-    }
-    if (targetEl) targetEl.textContent = text;
-  };
-
-  const startHighlight = (durationMs) => {
-    if (!targetEl || words.length < 2) return;
-    if (highlightInterval) clearInterval(highlightInterval);
-    const stepMs = Math.max(80, Math.floor(durationMs / words.length));
-    activeWordIndex = 0;
-    highlightWords(targetEl, words, activeWordIndex);
-    highlightInterval = setInterval(() => {
-      activeWordIndex = Math.min(activeWordIndex + 1, words.length - 1);
-      highlightWords(targetEl, words, activeWordIndex);
-    }, stepMs);
-  };
-
-  if (targetEl && words.length >= 2) {
-    const estimatedDurationMs = Math.max(1200, words.length * 220);
-    startHighlight(estimatedDurationMs);
-  }
 
   return new Promise((resolve) => {
     const wave = document.getElementById('wave-container');
     wave.classList.add('active');
-
-    const finalize = () => {
+    audio.play();
+    audio.onended = () => {
       wave.classList.remove('active');
-      clearHighlight();
       URL.revokeObjectURL(url);
-      if (activeNarrationAudio === audio) {
-        activeNarrationAudio = null;
-        activeNarrationCleanup = null;
-      }
       resolve();
     };
-
-    activeNarrationAudio = audio;
-    activeNarrationCleanup = finalize;
-
-    audio.onloadedmetadata = () => {
-      if (targetEl && Number.isFinite(audio.duration) && audio.duration > 0) {
-        startHighlight(audio.duration * 1000);
-      }
-    };
-    audio.play();
-    audio.onended = finalize;
-    audio.onerror = finalize;
+    audio.onerror = () => { wave.classList.remove('active'); resolve(); };
   });
 }
 
@@ -2256,177 +1081,66 @@ async function openingMonologue() {
   turnCount++;
 
   try {
-    await speakText(opening, el);
-    document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
-    document.getElementById('voice-transcript').textContent = 'Speak in Hindi, English, or Hinglish...';
+    await speakText(opening);
+    await promptLanguageChoice();
   } catch(e) {
     console.error('TTS error:', e);
-    addToScene('system', `⚠ Voice playback failed: ${e.message || 'Unknown TTS error'}`);
+    addToScene('system', '⚠ Voice playback failed. Check server API configuration.');
   }
+}
+
+async function promptLanguageChoice() {
+  awaitingLanguageChoice = true;
+  if (recognition) recognition.lang = 'en-IN';
+  document.getElementById('voice-label').textContent = '// LANGUAGE CHECK: ENGLISH OR HINDI';
+  document.getElementById('voice-transcript').textContent = 'Say: English or Hindi';
+  const prompt = 'Do you want to respond in English or Hindi? Say English or Hindi.';
+  addToScene('system', prompt);
+  await speakText(prompt);
 }
 
 // ============================================================
 //  SPEECH RECOGNITION (Hindi)
 // ============================================================
 function initRecognition() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    document.getElementById('voice-transcript').textContent = 'Speech recognition not supported. Use Chrome.';
+    document.getElementById('voice-transcript').classList.add('error');
+    return;
+  }
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'hi-IN';
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'hi-IN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => {
-      recognitionRetryCount = 0;
-      document.getElementById('voice-label').textContent = '// LISTENING...';
-      document.getElementById('voice-transcript').textContent = '...';
-    };
-
-    recognition.onresult = (event) => {
-      const result = event.results[event.results.length - 1];
-      const transcript = result[0].transcript;
-      document.getElementById('voice-transcript').textContent = transcript;
-      if (result.isFinal) {
-        handleRecognizedSpeech(transcript);
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error('Recognition error:', event.error);
-      document.getElementById('voice-transcript').classList.add('error');
-      document.getElementById('voice-transcript').textContent =
-        event.error === 'no-speech' ? 'No speech detected. Try again.' : `Fallback mic error: ${event.error}`;
-      stopRecording();
-    };
-
-    recognition.onend = () => {
-      if (recordingMode === 'speech-recognition') stopRecording();
-    };
-  }
-
-  if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
-    if (!recognition) {
-      document.getElementById('voice-transcript').textContent = 'Microphone recording not supported on this browser.';
-      document.getElementById('voice-transcript').classList.add('error');
-    }
-  }
-}
-
-function getSupportedMimeType() {
-  const preferred = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/mp4',
-    'audio/ogg;codecs=opus'
-  ];
-
-  for (const mimeType of preferred) {
-    if (MediaRecorder.isTypeSupported(mimeType)) return mimeType;
-  }
-  return '';
-}
-
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result || '';
-      const base64 = String(result).split(',')[1] || '';
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function transcribeAudioBlob(audioBlob, languageCode) {
-  const audioBase64 = await blobToBase64(audioBlob);
-  const response = await fetch('/api/stt', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      audioBase64,
-      mimeType: audioBlob.type || 'audio/webm',
-      languageCode
-    })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `STT error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return (data.text || '').trim();
-}
-
-async function startRecorderMode() {
-  mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  recordedChunks = [];
-
-  const mimeType = getSupportedMimeType();
-  mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
-  recordingMode = 'recorder';
-
-  mediaRecorder.ondataavailable = (event) => {
-    if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+  recognition.onstart = () => {
+    document.getElementById('voice-label').textContent = '// LISTENING...';
+    document.getElementById('voice-transcript').textContent = '...';
   };
 
-  mediaRecorder.onstop = async () => {
-    try {
-      document.getElementById('voice-label').textContent = '// TRANSCRIBING...';
-      document.getElementById('voice-transcript').textContent = 'Processing your speech...';
-      const blobType = mimeType || recordedChunks[0]?.type || 'audio/webm';
-      const audioBlob = new Blob(recordedChunks, { type: blobType });
-      const languageCode = undefined;
-      const transcript = await transcribeAudioBlob(audioBlob, languageCode);
-
-      if (!transcript) {
-        document.getElementById('voice-transcript').classList.add('error');
-        document.getElementById('voice-transcript').textContent = 'Could not hear clearly. Try speaking again.';
-      } else {
-        document.getElementById('voice-transcript').classList.remove('error');
-        document.getElementById('voice-transcript').textContent = transcript;
-        await handleRecognizedSpeech(transcript);
-      }
-    } catch (error) {
-      console.error('Recorder transcription error:', error);
-      document.getElementById('voice-transcript').classList.add('error');
-      document.getElementById('voice-transcript').textContent = `Mic transcription failed: ${error.message}`;
-    } finally {
-      cleanupMediaRecorder();
-      isRecording = false;
-      document.getElementById('voice-btn').classList.remove('recording');
-      if (!document.getElementById('voice-btn').disabled) {
-        document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
-      }
+  recognition.onresult = (event) => {
+    const result = event.results[event.results.length - 1];
+    const transcript = result[0].transcript;
+    document.getElementById('voice-transcript').textContent = transcript;
+    if (result.isFinal) {
+      handleRecognizedSpeech(transcript);
     }
   };
 
-  mediaRecorder.start();
-}
+  recognition.onerror = (event) => {
+    console.error('Recognition error:', event.error);
+    document.getElementById('voice-transcript').textContent = 
+      event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
+    document.getElementById('voice-transcript').classList.add('error');
+    stopRecording();
+  };
 
-function cleanupMediaRecorder() {
-  if (mediaStream) {
-    mediaStream.getTracks().forEach(track => track.stop());
-  }
-  mediaStream = null;
-  mediaRecorder = null;
-  recordedChunks = [];
-  if (recordingMode === 'recorder') recordingMode = null;
-}
-
-function fallbackToSpeechRecognition() {
-  if (!recognition) return false;
-  recordingMode = 'speech-recognition';
-  try {
-    recognition.start();
-    return true;
-  } catch (error) {
-    console.error('Fallback recognition start error:', error);
-    return false;
-  }
+  recognition.onend = () => {
+    stopRecording();
+  };
 }
 
 function toggleRecording() {
@@ -2438,72 +1152,70 @@ function toggleRecording() {
 }
 
 function startRecording() {
-  const isSecureLocal = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  if (!isSecureLocal) {
-    document.getElementById('voice-transcript').classList.add('error');
-    document.getElementById('voice-transcript').textContent = 'Mic requires HTTPS (or localhost). Open the secure deployed URL.';
-    return;
-  }
-
+  if (!recognition) return;
   isRecording = true;
-  playSfx('listen');
   document.getElementById('voice-btn').classList.add('recording');
-  document.getElementById('voice-label').textContent = '// LISTENING: AUTO LANGUAGE DETECT';
+  const modeLabel = awaitingLanguageChoice
+    ? '// LISTENING: LANGUAGE CHOICE'
+    : `// LISTENING IN ${preferredInputLanguage.toUpperCase()}...`;
+  document.getElementById('voice-label').textContent = modeLabel;
   document.getElementById('voice-transcript').classList.remove('error');
-  document.getElementById('voice-transcript').textContent = 'Speak naturally (Hindi / English / Hinglish)...';
-
-  if (navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined') {
-    startRecorderMode().catch((error) => {
-      console.error('Recorder mode error:', error);
-      if (fallbackToSpeechRecognition()) return;
-      document.getElementById('voice-transcript').classList.add('error');
-      document.getElementById('voice-transcript').textContent = `Microphone unavailable: ${error.message}`;
-      stopRecording();
-    });
-    return;
-  }
-
-  if (!fallbackToSpeechRecognition()) {
-    document.getElementById('voice-transcript').classList.add('error');
-    document.getElementById('voice-transcript').textContent = 'No supported microphone input path on this browser.';
-    stopRecording();
-  }
+  document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
+    ? 'English or Hindi?'
+    : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
+  recognition.start();
 }
 
 function stopRecording() {
-  const activeMode = recordingMode;
   isRecording = false;
   document.getElementById('voice-btn').classList.remove('recording');
-  document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
-
-  if (activeMode === 'recorder' && mediaRecorder && mediaRecorder.state !== 'inactive') {
-    try { mediaRecorder.stop(); } catch(e) {}
-    return;
+  if (awaitingLanguageChoice) {
+    document.getElementById('voice-label').textContent = '// WAITING FOR LANGUAGE CHOICE';
+  } else {
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
   }
-
   if (recognition) { try { recognition.stop(); } catch(e) {} }
-  if (activeMode === 'recorder') cleanupMediaRecorder();
-  recordingMode = null;
+}
+
+function setRecognitionLanguage(lang) {
+  if (!recognition) return;
+  recognition.lang = lang === 'english' ? 'en-US' : 'hi-IN';
+}
+
+function detectLanguageChoice(text) {
+  const normalized = text.toLowerCase();
+  const wantsEnglish = /english|inglish|अंग्रेज|इंग्लिश/.test(normalized);
+  const wantsHindi = /hindi|hindee|हिंदी|हिन्दी/.test(normalized);
+  if (wantsEnglish) return 'english';
+  if (wantsHindi) return 'hindi';
+  return null;
 }
 
 function isLikelyHindi(text) {
   return /[\u0900-\u097F]/.test(text);
 }
 
-function detectInputLanguage(text) {
-  const hasDevanagari = /[\u0900-\u097F]/.test(text);
-  const hasLatin = /[A-Za-z]/.test(text);
-  if (hasDevanagari && hasLatin) return 'mixed';
-  if (hasDevanagari) return 'hindi';
-  return 'english';
-}
-
 async function handleRecognizedSpeech(transcript) {
-  if (!transcript.trim()) return;
-  const detectedLanguage = detectInputLanguage(transcript);
-  preferredInputLanguage = detectedLanguage;
-  document.getElementById('header-lang').textContent = `INPUT: AUTO (${detectedLanguage.toUpperCase()})`;
-  await processPlayerInput(transcript, detectedLanguage);
+  if (awaitingLanguageChoice) {
+    const selected = detectLanguageChoice(transcript);
+    if (!selected) {
+      addToScene('system', 'Could not detect language choice. Please say English or Hindi.');
+      document.getElementById('voice-label').textContent = '// SAY: ENGLISH OR HINDI';
+      document.getElementById('voice-transcript').textContent = 'Please say English or Hindi';
+      return;
+    }
+
+    preferredInputLanguage = selected;
+    awaitingLanguageChoice = false;
+    setRecognitionLanguage(selected);
+    document.getElementById('header-lang').textContent = `INPUT: ${selected.toUpperCase()}`;
+    addToScene('system', `Language set to ${selected.toUpperCase()}. Give your command now.`);
+    document.getElementById('voice-label').textContent = `// READY IN ${selected.toUpperCase()}`;
+    document.getElementById('voice-transcript').textContent = selected === 'hindi' ? 'अब अपना आदेश दीजिए।' : 'Now give your command.';
+    return;
+  }
+
+  await processPlayerInput(transcript, preferredInputLanguage);
 }
 
 // ============================================================
@@ -2511,7 +1223,7 @@ async function handleRecognizedSpeech(transcript) {
 // ============================================================
 async function processPlayerInput(rawText, selectedLanguage) {
   if (!rawText.trim()) return;
-  const effectiveLanguage = detectInputLanguage(rawText);
+  const effectiveLanguage = isLikelyHindi(rawText) ? 'hindi' : selectedLanguage;
 
   // Show what player said
   addToScene('player', rawText, effectiveLanguage === 'hindi' ? 'hindi' : '');
@@ -2521,7 +1233,6 @@ async function processPlayerInput(rawText, selectedLanguage) {
   document.getElementById('voice-btn').disabled = true;
   document.getElementById('voice-label').textContent = '// DETECTIVE IS THINKING...';
   document.getElementById('voice-transcript').textContent = '';
-  
 
   // Thinking indicator
   const thinkEl = addToScene('detective', '');
@@ -2529,14 +1240,10 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
   try {
     let englishIntent = rawText;
-    if (effectiveLanguage === 'hindi' || effectiveLanguage === 'mixed') {
-      englishIntent = await translateToEnglish(rawText, effectiveLanguage === 'mixed' ? 'Hindi-English mixed' : 'Hindi');
+    if (effectiveLanguage === 'hindi') {
+      englishIntent = await translateToEnglish(rawText, 'Hindi');
       addToScene('system', `English intent: ${englishIntent}`);
     }
-
-    
-
-    
 
     // Get Claude response
     const reply = await askClaude(englishIntent, rawText, effectiveLanguage);
@@ -2578,19 +1285,21 @@ async function processPlayerInput(rawText, selectedLanguage) {
     }
 
     // Speak the reply
-    await speakText(reply, thinkEl);
-    
+    if (typeof speakText === 'function') {
+      await speakText(reply);
+    }
+    await promptLanguageChoice();
 
   } catch (err) {
-    thinkEl.textContent = `⚠ Error: ${err.message}. Check server environment variables.`;
+    thinkEl.textContent = `⚠ Error: ${err.message}. Check your API keys.`;
     thinkEl.style.color = 'var(--red)';
-    
-    playSfx('error');
     console.error(err);
   }
 
   document.getElementById('voice-btn').disabled = false;
-  document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
+  if (!awaitingLanguageChoice) {
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+  }
 }
 
 function updateSuspectsFromContext(reply, hindi) {
@@ -2622,19 +1331,6 @@ function resetGame() {
   evidenceCount = 1;
   awaitingLanguageChoice = false;
   preferredInputLanguage = 'hindi';
-  lastEnglishAction = '';
-  lastAssetPrompt = '';
-  arenaScore = 0;
-  arenaCombo = 1;
-  gameplayState.hero = { x: 120, y: 210, tx: 120, ty: 210, jumpUntil: 0 };
-  gameplayState.enemy = { active: false, x: 680, y: 190, hp: 0, maxHp: 0, fleeingUntil: 0 };
-  gameplayState.loot = [];
-  gameplayState.buildings = { hut: 0, tower: 0, pulseUntil: 0, pulseTarget: '' };
-  gameplayState.resources = { coins: 0, wood: 0 };
-  gameplayState.inBattle = false;
-  gameplayState.areaIndex = 1;
-  placedAssets = [];
-  generatedAssets = Array.from({ length: 4 }, () => ({ url: '', prompt: '' }));
   SUSPECTS.forEach(s => { s.guilt = 0; s.status = 'suspect'; });
 
   document.getElementById('story-scene').innerHTML = '';
@@ -2645,11 +1341,7 @@ function resetGame() {
     </div>
   `;
   document.getElementById('outcome-overlay').classList.remove('active');
-  document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
-  document.getElementById('voice-log-list').innerHTML = '';
-  
-  updateArenaHud();
-  initAssetSlots();
+  document.getElementById('header-lang').textContent = 'INPUT: HINDI';
   renderSuspects();
   logJournal({ kind: 'scene', role: 'system', text: '--- NEW CASE STARTED ---', at: new Date().toISOString(), turn: 0 });
   openingMonologue();
