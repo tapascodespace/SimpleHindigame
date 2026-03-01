@@ -1018,7 +1018,7 @@ async function callClaude(systemPrompt, messages, maxTokens = 300) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'mistral-large-latest',
       max_tokens: maxTokens,
       system: systemPrompt,
       messages

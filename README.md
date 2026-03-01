@@ -2,7 +2,7 @@
 
 A single-page noir detective game with:
 - Hindi/English/mixed speech input (recorder + server STT)
-- Mistral reasoning on AWS Bedrock
+- Mistral reasoning (via Mistral API or AWS Bedrock)
 - Amazon Polly (Aditi) bilingual voice narration
 - Persistent in-browser story journal
 
@@ -11,10 +11,13 @@ A single-page noir detective game with:
 1. Push this folder to a GitHub repo.
 2. Import the repo in Vercel.
 3. In Vercel Project Settings → Environment Variables, add:
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-   - `AWS_REGION` (example: `ap-south-1` for Polly, Bedrock region as available)
-   - `BEDROCK_MODEL_ID` (default used: `mistral.mistral-large-2407-v1:0`)
+   - `MISTRAL_API_KEY` (preferred if you want simple key-based Mistral access)
+   - OR Bedrock credentials:
+     - `AWS_ACCESS_KEY_ID`
+     - `AWS_SECRET_ACCESS_KEY`
+     - `AWS_REGION` (example: `ap-south-1` for Polly, Bedrock region as available)
+   - `BEDROCK_MODEL_ID` (default: `mistral.mistral-large-2407-v1:0`)
+   - `MISTRAL_MODEL` (default: `mistral-large-latest` when using Mistral API)
    - `POLLY_VOICE_ID` (default: `Aditi`)
    - `ELEVENLABS_API_KEY` (currently used by `/api/stt` route for robust speech-to-text)
 4. Deploy.
@@ -38,7 +41,7 @@ For full serverless route testing, use `vercel dev` after logging in.
 ## Serverless routes
 
 - `POST /api/claude` → Claude text response
-- `POST /api/claude` → Bedrock Mistral text response (kept route name for frontend compatibility)
+- `POST /api/claude` → Mistral text response (Mistral API first, Bedrock fallback; route name kept for compatibility)
 - `POST /api/tts` → Amazon Polly MP3 audio stream
 - `POST /api/stt` → ElevenLabs speech-to-text transcription
 - `GET /api/health` → health check
