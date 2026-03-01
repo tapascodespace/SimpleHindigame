@@ -726,6 +726,8 @@ let turnCount = 0;
 let preferredInputLanguage = 'hindi';
 let awaitingLanguageChoice = false;
 let storyJournal = [];
+let recognitionRetryCount = 0;
+const MAX_RECOGNITION_RETRIES = 1;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1154,7 +1156,7 @@ async function openingMonologue() {
 
 async function promptLanguageChoice() {
   awaitingLanguageChoice = true;
-  if (recognition) recognition.lang = 'en-IN';
+  if (recognition) recognition.lang = 'en-US';
   document.getElementById('voice-label').textContent = '// LANGUAGE CHECK: ENGLISH OR HINDI';
   document.getElementById('voice-transcript').textContent = 'Say: English or Hindi';
   const prompt = 'Do you want to respond in English or Hindi? Say English or Hindi.';
@@ -1180,6 +1182,7 @@ function initRecognition() {
   recognition.maxAlternatives = 1;
 
   recognition.onstart = () => {
+    recognitionRetryCount = 0;
     document.getElementById('voice-label').textContent = '// LISTENING...';
     document.getElementById('voice-transcript').textContent = '...';
   };
@@ -1195,8 +1198,27 @@ function initRecognition() {
 
   recognition.onerror = (event) => {
     console.error('Recognition error:', event.error);
-    document.getElementById('voice-transcript').textContent = 
-      event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
+
+    if (event.error === 'network') {
+      const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      if (!online) {
+        document.getElementById('voice-transcript').textContent = 'No internet detected. Reconnect and try the mic again.';
+      } else if (recognitionRetryCount < MAX_RECOGNITION_RETRIES) {
+        recognitionRetryCount += 1;
+        document.getElementById('voice-transcript').textContent = 'Mic network glitch. Retrying once...';
+        stopRecording();
+        setTimeout(() => {
+          if (!document.getElementById('voice-btn').disabled) startRecording();
+        }, 900);
+        return;
+      } else {
+        document.getElementById('voice-transcript').textContent = 'Speech service network error. Use Chrome on HTTPS and try again.';
+      }
+    } else {
+      document.getElementById('voice-transcript').textContent =
+        event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
+    }
+
     document.getElementById('voice-transcript').classList.add('error');
     stopRecording();
   };
@@ -1216,6 +1238,14 @@ function toggleRecording() {
 
 function startRecording() {
   if (!recognition) return;
+
+  const isSecureLocal = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!isSecureLocal) {
+    document.getElementById('voice-transcript').classList.add('error');
+    document.getElementById('voice-transcript').textContent = 'Mic requires HTTPS (or localhost). Open the secure deployed URL.';
+    return;
+  }
+
   isRecording = true;
   document.getElementById('voice-btn').classList.add('recording');
   const modeLabel = awaitingLanguageChoice
@@ -1226,7 +1256,15 @@ function startRecording() {
   document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
     ? 'English or Hindi?'
     : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
-  recognition.start();
+
+  try {
+    recognition.start();
+  } catch (error) {
+    console.error('Recognition start error:', error);
+    document.getElementById('voice-transcript').classList.add('error');
+    document.getElementById('voice-transcript').textContent = 'Mic is busy. Wait a second and tap again.';
+    stopRecording();
+  }
 }
 
 function stopRecording() {
