@@ -361,6 +361,30 @@
   .map-wrap {
     padding: 18px 24px 0;
     border-bottom: 1px solid #1a1209;
+    position: relative;
+  }
+
+  .arena-hud {
+    position: absolute;
+    top: 24px;
+    left: 30px;
+    display: flex;
+    gap: 8px;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .hud-pill {
+    background: rgba(20, 13, 6, 0.86);
+    color: #fff2cf;
+    border: 2px solid #7b5b13;
+    border-radius: 12px;
+    padding: 5px 10px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+    box-shadow: 0 4px 0 #3e2d08;
   }
 
   .map-toolbar {
@@ -371,16 +395,20 @@
   }
 
   .map-btn {
-    background: #1a1209;
-    color: var(--sepia-light);
-    border: 1px solid var(--sepia);
+    background: linear-gradient(180deg, #2f1f0b, #1a1209);
+    color: #ffe5a4;
+    border: 2px solid #8e6b1b;
+    border-radius: 10px;
     padding: 6px 10px;
     font-size: 11px;
     font-family: var(--font-ui);
     cursor: pointer;
+    box-shadow: 0 4px 0 #4e360c;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
   }
 
   .map-btn:hover { box-shadow: var(--glow); }
+  .map-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #4e360c; }
 
   #map-canvas {
     width: 100%;
@@ -389,6 +417,19 @@
     border: 1px solid #2a1f0a;
     image-rendering: pixelated;
     display: block;
+  }
+
+  #game-screen.impact-shake {
+    animation: arena-shake 0.28s linear;
+  }
+
+  @keyframes arena-shake {
+    0% { transform: translate(0,0); }
+    20% { transform: translate(-3px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, 1px); }
+    80% { transform: translate(2px, 2px); }
+    100% { transform: translate(0,0); }
   }
 
   .scene-entry {
@@ -864,6 +905,11 @@
   <!-- Story Center -->
   <main class="story-panel">
     <div class="map-wrap">
+      <div class="arena-hud">
+        <div class="hud-pill" id="hud-score">Score: 0</div>
+        <div class="hud-pill" id="hud-combo">Combo: x1</div>
+        <div class="hud-pill" id="hud-status">Status: ready</div>
+      </div>
       <div class="map-toolbar">
         <button class="map-btn" onclick="generateAssetFromLastCommand()">Generate asset from last command</button>
         <button class="map-btn" onclick="useFallbackKenney()">Use fallback (Kenney)</button>
@@ -990,11 +1036,19 @@ let nextAssetSlot = 0;
 let mapCanvas = null;
 let mapCtx = null;
 let placedAssets = [];
+let mapLoopStarted = false;
 let assetCache = {};
 let skipDialogueMode = false;
 let activeTypewriterState = null;
 let activeNarrationAudio = null;
 let activeNarrationCleanup = null;
+let arenaScore = 0;
+let arenaCombo = 1;
+let arenaStatus = 'ready';
+let comboTimeout = null;
+let arenaParticles = [];
+let mapFlash = null;
+let audioCtx = null;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1109,15 +1163,191 @@ function toggleSkipMode() {
   }
 }
 
+function updateArenaHud() {
+  const scoreEl = document.getElementById('hud-score');
+  const comboEl = document.getElementById('hud-combo');
+  const statusEl = document.getElementById('hud-status');
+  if (scoreEl) scoreEl.textContent = `Score: ${arenaScore}`;
+  if (comboEl) comboEl.textContent = `Combo: x${arenaCombo}`;
+  if (statusEl) statusEl.textContent = `Status: ${arenaStatus}`;
+}
+
+function setArenaStatus(text) {
+  arenaStatus = text;
+  updateArenaHud();
+}
+
+function bumpCombo() {
+  arenaCombo = Math.min(9, arenaCombo + 1);
+  if (comboTimeout) clearTimeout(comboTimeout);
+  comboTimeout = setTimeout(() => {
+    arenaCombo = 1;
+    updateArenaHud();
+  }, 5500);
+}
+
+function addScore(basePoints) {
+  arenaScore += Math.max(1, Math.floor(basePoints * arenaCombo));
+  updateArenaHud();
+}
+
+function triggerScreenShake() {
+  const screen = document.getElementById('game-screen');
+  if (!screen) return;
+  screen.classList.remove('impact-shake');
+  void screen.offsetWidth;
+  screen.classList.add('impact-shake');
+  setTimeout(() => screen.classList.remove('impact-shake'), 300);
+}
+
+function flashMap(color, duration = 180) {
+  mapFlash = {
+    color,
+    until: performance.now() + duration
+  };
+}
+
+function emitParticles(x, y, color, count = 16) {
+  for (let i = 0; i < count; i++) {
+    arenaParticles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 3.2,
+      vy: (Math.random() - 0.5) * 3.2,
+      life: 0,
+      maxLife: 36 + Math.random() * 18,
+      size: 2 + Math.random() * 3,
+      color
+    });
+  }
+}
+
+function ensureAudioContext() {
+  if (!audioCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    audioCtx = new Ctx();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+function playSfx(type) {
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  if (type === 'listen') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(620, now);
+    osc.frequency.exponentialRampToValueAtTime(780, now + 0.05);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    osc.start(now);
+    osc.stop(now + 0.09);
+    return;
+  }
+
+  if (type === 'error') {
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(140, now + 0.14);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.09, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+    osc.start(now);
+    osc.stop(now + 0.17);
+    return;
+  }
+
+  if (type === 'impact') {
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.13, now + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+    osc.start(now);
+    osc.stop(now + 0.11);
+    return;
+  }
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(540, now);
+  osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.07, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  osc.start(now);
+  osc.stop(now + 0.13);
+}
+
+function runActionJuice(actionText) {
+  const t = String(actionText || '').toLowerCase();
+  const centerX = mapCanvas ? mapCanvas.width * 0.5 : 450;
+  const centerY = mapCanvas ? mapCanvas.height * 0.5 : 150;
+
+  if (/attack|strike|hit|slash|fireball|aakraman|आक्रमण/.test(t)) {
+    addScore(12);
+    bumpCombo();
+    setArenaStatus('attack');
+    triggerScreenShake();
+    flashMap('rgba(220,60,40,0.12)', 180);
+    emitParticles(centerX, centerY, '#ff7043', 22);
+    playSfx('impact');
+    return;
+  }
+
+  if (/defend|shield|raksha|रक्षा/.test(t)) {
+    addScore(8);
+    bumpCombo();
+    setArenaStatus('defend');
+    flashMap('rgba(80,140,255,0.14)', 220);
+    emitParticles(centerX, centerY, '#8bb3ff', 16);
+    playSfx('success');
+    return;
+  }
+
+  if (/magic|spell|jaadu|जादू/.test(t)) {
+    addScore(10);
+    bumpCombo();
+    setArenaStatus('magic');
+    flashMap('rgba(182,92,255,0.14)', 220);
+    emitParticles(centerX, centerY, '#d88cff', 24);
+    playSfx('success');
+    return;
+  }
+
+  addScore(5);
+  setArenaStatus('investigate');
+  emitParticles(centerX, centerY, '#f9c74f', 10);
+  playSfx('success');
+}
+
 function initMapCanvas() {
   mapCanvas = document.getElementById('map-canvas');
   if (!mapCanvas) return;
   mapCtx = mapCanvas.getContext('2d');
-  drawMapCanvas();
+  if (!mapLoopStarted) {
+    mapLoopStarted = true;
+    const loop = () => {
+      drawMapCanvas();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
 }
 
 function drawMapCanvas() {
   if (!mapCtx || !mapCanvas) return;
+  const now = performance.now();
   mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
   mapCtx.fillStyle = '#0b0703';
   mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
@@ -1139,9 +1369,43 @@ function drawMapCanvas() {
 
   for (const token of placedAssets) {
     if (token.image && token.image.complete) {
-      mapCtx.drawImage(token.image, token.x, token.y, token.size, token.size);
+      const age = now - (token.spawnAt || now);
+      const pop = Math.min(1, Math.max(0.35, age / 220));
+      const bob = Math.sin((now + (token.phase || 0)) / 240) * 2.5;
+      const drawSize = token.size * pop;
+      const offset = (token.size - drawSize) * 0.5;
+
+      mapCtx.fillStyle = 'rgba(0,0,0,0.34)';
+      mapCtx.beginPath();
+      mapCtx.ellipse(token.x + token.size * 0.5, token.y + token.size + 7, token.size * 0.28, token.size * 0.1, 0, 0, Math.PI * 2);
+      mapCtx.fill();
+
+      mapCtx.drawImage(token.image, token.x + offset, token.y + offset + bob, drawSize, drawSize);
     }
   }
+
+  if (mapFlash && mapFlash.until > now) {
+    mapCtx.fillStyle = mapFlash.color;
+    mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+  }
+
+  for (let i = arenaParticles.length - 1; i >= 0; i--) {
+    const particle = arenaParticles[i];
+    particle.life += 1;
+    particle.x += particle.vx;
+    particle.y += particle.vy;
+    particle.vy += 0.02;
+    const alpha = Math.max(0, 1 - particle.life / particle.maxLife);
+    if (alpha <= 0) {
+      arenaParticles.splice(i, 1);
+      continue;
+    }
+    mapCtx.globalAlpha = alpha;
+    mapCtx.fillStyle = particle.color;
+    mapCtx.fillRect(particle.x, particle.y, particle.size, particle.size);
+    mapCtx.globalAlpha = 1;
+  }
+
 }
 
 function initAssetSlots() {
@@ -1216,6 +1480,7 @@ async function generateAssetAndAddToPanel(assetPrompt) {
   }
 
   setAssetSpinner(true);
+  setArenaStatus('generating');
 
   try {
     const response = await fetch('/api/gen_image', {
@@ -1237,12 +1502,16 @@ async function generateAssetAndAddToPanel(assetPrompt) {
     assetCache[cacheKey] = { url, prompt: assetPrompt, at: Date.now() };
     saveAssetCache();
     setAssetSlot(slotIndex, url, assetPrompt);
+    setArenaStatus('asset ready');
+    playSfx('success');
   } catch (error) {
     logVoiceEvent('system', 'Asset generation fallback used', error.message || 'Unknown generation error');
     const fallbackUrl = createFallbackAsset(assetPrompt, size);
     assetCache[cacheKey] = { url: fallbackUrl, prompt: assetPrompt, at: Date.now() };
     saveAssetCache();
     setAssetSlot(slotIndex, fallbackUrl, `${assetPrompt} (fallback)`);
+    setArenaStatus('fallback asset');
+    playSfx('error');
   } finally {
     setAssetSpinner(false);
   }
@@ -1267,7 +1536,10 @@ function applyAssetSlot(index) {
     const maxY = Math.max(0, mapCanvas.height - size - 8);
     const x = Math.floor(Math.random() * (maxX + 1));
     const y = Math.floor(Math.random() * (maxY + 1));
-    placedAssets.push({ image, x, y, size, prompt: asset.prompt });
+    placedAssets.push({ image, x, y, size, prompt: asset.prompt, spawnAt: performance.now(), phase: Math.random() * 999 });
+    setArenaStatus('asset deployed');
+    addScore(6);
+    playSfx('success');
     drawMapCanvas();
   };
   image.src = asset.url;
@@ -1399,6 +1671,10 @@ function startGame() {
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('game-screen').classList.add('active');
     document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
+    arenaScore = 0;
+    arenaCombo = 1;
+    setArenaStatus('ready');
+    updateArenaHud();
     logJournal({ kind: 'scene', role: 'system', text: '--- CASE FILE OPENED ---', at: new Date().toISOString(), turn: 0 });
     initMapCanvas();
     initAssetSlots();
@@ -1930,6 +2206,7 @@ function startRecording() {
   }
 
   isRecording = true;
+  playSfx('listen');
   document.getElementById('voice-btn').classList.add('recording');
   document.getElementById('voice-label').textContent = '// LISTENING: AUTO LANGUAGE DETECT';
   document.getElementById('voice-transcript').classList.remove('error');
@@ -2004,6 +2281,7 @@ async function processPlayerInput(rawText, selectedLanguage) {
   document.getElementById('voice-btn').disabled = true;
   document.getElementById('voice-label').textContent = '// DETECTIVE IS THINKING...';
   document.getElementById('voice-transcript').textContent = '';
+  setArenaStatus('processing');
 
   // Thinking indicator
   const thinkEl = addToScene('detective', '');
@@ -2019,6 +2297,7 @@ async function processPlayerInput(rawText, selectedLanguage) {
     const actionPacket = await buildActionAssetPacket(englishIntent);
     lastEnglishAction = actionPacket.action;
     lastAssetPrompt = actionPacket.asset_prompt;
+    runActionJuice(lastEnglishAction);
     logVoiceEvent(rawText, lastEnglishAction, lastAssetPrompt);
     await generateAssetAndAddToPanel(lastAssetPrompt);
 
@@ -2063,10 +2342,13 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
     // Speak the reply
     await speakText(reply, thinkEl);
+    setArenaStatus('ready');
 
   } catch (err) {
     thinkEl.textContent = `⚠ Error: ${err.message}. Check server environment variables.`;
     thinkEl.style.color = 'var(--red)';
+    setArenaStatus('error');
+    playSfx('error');
     console.error(err);
   }
 
@@ -2105,6 +2387,8 @@ function resetGame() {
   preferredInputLanguage = 'hindi';
   lastEnglishAction = '';
   lastAssetPrompt = '';
+  arenaScore = 0;
+  arenaCombo = 1;
   placedAssets = [];
   generatedAssets = Array.from({ length: 4 }, () => ({ url: '', prompt: '' }));
   SUSPECTS.forEach(s => { s.guilt = 0; s.status = 'suspect'; });
@@ -2119,8 +2403,9 @@ function resetGame() {
   document.getElementById('outcome-overlay').classList.remove('active');
   document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
   document.getElementById('voice-log-list').innerHTML = '';
+  setArenaStatus('ready');
+  updateArenaHud();
   initAssetSlots();
-  drawMapCanvas();
   renderSuspects();
   logJournal({ kind: 'scene', role: 'system', text: '--- NEW CASE STARTED ---', at: new Date().toISOString(), turn: 0 });
   openingMonologue();
