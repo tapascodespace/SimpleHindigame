@@ -1154,7 +1154,7 @@ async function openingMonologue() {
     await promptLanguageChoice();
   } catch(e) {
     console.error('TTS error:', e);
-    addToScene('system', '⚠ Voice playback failed. Check server API configuration.');
+    addToScene('system', `⚠ Voice playback failed: ${e.message || 'Unknown TTS error'}`);
   }
 }
 
