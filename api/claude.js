@@ -34,6 +34,10 @@ module.exports = async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const maxTokens = Number(body?.max_tokens || 350);
     const messages = mapMessages(body?.messages || []);
+    const requestedModel = String(body?.model || '').trim();
+    const normalizedRequestedModel = requestedModel.toLowerCase().includes('claude')
+      ? ''
+      : requestedModel;
 
     if (mistralApiKey) {
       const chatMessages = [];
@@ -51,7 +55,7 @@ module.exports = async function handler(req, res) {
           Authorization: `Bearer ${mistralApiKey}`
         },
         body: JSON.stringify({
-          model: body?.model || mistralApiModel,
+          model: normalizedRequestedModel || mistralApiModel,
           messages: chatMessages,
           max_tokens: maxTokens,
           temperature: 0.7,
@@ -72,7 +76,7 @@ module.exports = async function handler(req, res) {
 
     const client = new BedrockRuntimeClient({ region });
     const command = new ConverseCommand({
-      modelId: body?.model || bedrockModelId,
+      modelId: normalizedRequestedModel || bedrockModelId,
       system: body?.system ? [{ text: String(body.system) }] : undefined,
       messages,
       inferenceConfig: {
