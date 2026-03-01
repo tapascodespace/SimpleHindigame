@@ -4,9 +4,16 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const runwareKey = process.env.RUNWARE_API_KEY;
+  const runwareKey =
+    process.env.RUNWARE_API_KEY ||
+    process.env.RUNWARE_KEY ||
+    process.env.RUNWAY_API_KEY ||
+    process.env.RUNWARE_BEARER_TOKEN ||
+    '';
   if (!runwareKey) {
-    return res.status(503).json({ error: 'RUNWARE_API_KEY is not configured' });
+    return res.status(503).json({
+      error: 'Runware key missing. Set RUNWARE_API_KEY (or RUNWARE_KEY / RUNWAY_API_KEY / RUNWARE_BEARER_TOKEN).'
+    });
   }
 
   try {
