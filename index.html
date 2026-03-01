@@ -11,16 +11,16 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --ink: #1a1209;
-    --paper: #f0e6c8;
-    --paper-dark: #d4c49a;
-    --sepia: #8b6914;
-    --sepia-light: #c49a2a;
-    --red: #c0392b;
-    --red-dim: #7a1f14;
-    --green: #2d6a2d;
-    --smoke: rgba(26,18,9,0.85);
-    --glow: 0 0 20px rgba(196,154,42,0.3);
+    --ink: #ffffff; /* White background */
+    --paper: #000000; /* Black/Dark text instead of light yellow */
+    --paper-dark: #d1d5db; /* Light gray for backgrounds/borders */
+    --sepia: #2563eb; /* Blue accent */
+    --sepia-light: #3b82f6; /* Blue hover */
+    --red: #dc2626; /* Red accent */
+    --red-dim: #991b1b; /* Dim red */
+    --green: #16a34a; /* Green accent */
+    --smoke: rgba(255, 255, 255, 0.9);
+    --glow: 0 0 20px rgba(37, 99, 235, 0.3);
     --font-display: 'Bebas Neue', 'Space Grotesk', sans-serif;
     --font-ui: 'Inter', sans-serif;
     --text-bright: #f8f2de;
@@ -286,7 +286,7 @@
   }
 
   .evidence-item {
-    background: #1a1209;
+    background: #f1f5f9;
     border: 1px solid #2a1f0a;
     border-left: 3px solid var(--sepia);
     padding: 12px;
@@ -320,7 +320,7 @@
   }
 
   .voice-log-item {
-    background: #1a1209;
+    background: #f1f5f9;
     border: 1px solid #2a1f0a;
     padding: 10px;
     margin-bottom: 8px;
@@ -343,7 +343,7 @@
   /* STORY PANEL */
   .story-panel {
     grid-area: story;
-    background: #0e0a04;
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -495,7 +495,7 @@
     justify-content: center;
     gap: 4px;
     padding: 16px 32px;
-    background: #0e0a04;
+    background: #ffffff;
     border-top: 1px solid #1a1209;
   }
 
@@ -525,7 +525,7 @@
   }
 
   .suspect-card {
-    background: #1a1209;
+    background: #f1f5f9;
     border: 1px solid #2a1f0a;
     padding: 12px;
     margin-bottom: 12px;
@@ -572,7 +572,7 @@
   }
 
   .asset-controls select {
-    background: #1a1209;
+    background: #f1f5f9;
     color: var(--text-bright);
     border: 1px solid #2a1f0a;
     padding: 6px;
@@ -607,7 +607,7 @@
   }
 
   .asset-slot {
-    background: #1a1209;
+    background: #f1f5f9;
     border: 1px solid #2a1f0a;
     padding: 6px;
   }
@@ -670,7 +670,7 @@
   .voice-btn {
     width: 52px; height: 52px;
     border-radius: 50%;
-    background: #1a1209;
+    background: #f1f5f9;
     border: 2px solid var(--sepia);
     cursor: pointer;
     display: flex;
@@ -726,13 +726,13 @@
   .voice-hint {
     font-family: var(--font-ui);
     font-size: 11px;
-    color: #4a3820;
+    color: #94a3b8;
     text-align: right;
     line-height: 1.6;
   }
 
   .long-mode-toggle {
-    background: #1a1209;
+    background: #f1f5f9;
     color: var(--sepia-light);
     border: 1px solid var(--sepia);
     padding: 8px 10px;
@@ -750,7 +750,7 @@
   }
 
   .skip-mode-toggle {
-    background: #1a1209;
+    background: #f1f5f9;
     color: var(--sepia-light);
     border: 1px solid var(--sepia);
     padding: 8px 10px;
@@ -796,7 +796,7 @@
     text-align: center;
     padding: 60px;
     border: 3px solid var(--sepia);
-    background: #0e0a04;
+    background: #ffffff;
     max-width: 480px;
     box-shadow: var(--glow);
   }
@@ -904,76 +904,12 @@
 
   <!-- Story Center -->
   <main class="story-panel">
-    <div class="map-wrap">
-      <div class="arena-hud">
-        <div class="hud-pill" id="hud-score">Score: 0</div>
-        <div class="hud-pill" id="hud-combo">Combo: x1</div>
-        <div class="hud-pill" id="hud-status">Status: ready</div>
-        <div class="hud-pill" id="hud-resource">Coins: 0 | Wood: 0</div>
-        <div class="hud-pill" id="hud-enemy">Enemy HP: --</div>
-      </div>
-      <div class="map-toolbar">
-        <button class="map-btn" onclick="generateAssetFromLastCommand()">Generate asset from last command</button>
-        <button class="map-btn" onclick="useFallbackKenney()">Use fallback (Kenney)</button>
-      </div>
-      <canvas id="map-canvas" width="900" height="300"></canvas>
-    </div>
-    <div class="story-scene" id="story-scene"></div>
-    <div class="wave-container" id="wave-container">
-      <!-- wave bars injected by JS -->
+    <!-- wave bars injected by JS -->
     </div>
   </main>
 
   <!-- Generative Assets Panel -->
   <aside class="clues-panel">
-    <div class="panel-header">// GENERATIVE ASSETS</div>
-    <div class="asset-controls">
-      <select id="style-select">
-        <option value="pixel">Pixel</option>
-        <option value="flat">Flat</option>
-        <option value="cartoon">Cartoon</option>
-        <option value="noir">Noir</option>
-      </select>
-      <select id="size-select">
-        <option value="64">64</option>
-        <option value="128" selected>128</option>
-        <option value="256">256</option>
-      </select>
-    </div>
-    <div class="asset-spinner" id="asset-spinner">
-      <div class="spinner-dot"></div>
-      Generating asset...
-    </div>
-    <div class="asset-grid" id="asset-grid">
-      <div class="asset-slot">
-        <img class="asset-thumb" id="asset-thumb-0" alt="Generated asset 1">
-        <div class="asset-actions">
-          <button class="asset-apply" id="asset-apply-0" onclick="applyAssetSlot(0)" disabled>Apply</button>
-          <button class="asset-refine" id="asset-refine-0" onclick="refineAssetSlot(0)" disabled>Refine</button>
-        </div>
-      </div>
-      <div class="asset-slot">
-        <img class="asset-thumb" id="asset-thumb-1" alt="Generated asset 2">
-        <div class="asset-actions">
-          <button class="asset-apply" id="asset-apply-1" onclick="applyAssetSlot(1)" disabled>Apply</button>
-          <button class="asset-refine" id="asset-refine-1" onclick="refineAssetSlot(1)" disabled>Refine</button>
-        </div>
-      </div>
-      <div class="asset-slot">
-        <img class="asset-thumb" id="asset-thumb-2" alt="Generated asset 3">
-        <div class="asset-actions">
-          <button class="asset-apply" id="asset-apply-2" onclick="applyAssetSlot(2)" disabled>Apply</button>
-          <button class="asset-refine" id="asset-refine-2" onclick="refineAssetSlot(2)" disabled>Refine</button>
-        </div>
-      </div>
-      <div class="asset-slot">
-        <img class="asset-thumb" id="asset-thumb-3" alt="Generated asset 4">
-        <div class="asset-actions">
-          <button class="asset-apply" id="asset-apply-3" onclick="applyAssetSlot(3)" disabled>Apply</button>
-          <button class="asset-refine" id="asset-refine-3" onclick="refineAssetSlot(3)" disabled>Refine</button>
-        </div>
-      </div>
-    </div>
     <div class="panel-header" style="margin-top:18px;">// SUSPECTS</div>
     <div id="suspects-list"></div>
   </aside>
@@ -1312,7 +1248,7 @@ function runActionJuice(actionText) {
   if (/attack|strike|hit|slash|fireball|aakraman|आक्रमण/.test(t)) {
     addScore(12);
     bumpCombo();
-    setArenaStatus('attack');
+    
     triggerScreenShake();
     flashMap('rgba(220,60,40,0.12)', 180);
     emitParticles(centerX, centerY, '#ff7043', 22);
@@ -1323,7 +1259,7 @@ function runActionJuice(actionText) {
   if (/defend|shield|raksha|रक्षा/.test(t)) {
     addScore(8);
     bumpCombo();
-    setArenaStatus('defend');
+    
     flashMap('rgba(80,140,255,0.14)', 220);
     emitParticles(centerX, centerY, '#8bb3ff', 16);
     playSfx('success');
@@ -1333,7 +1269,7 @@ function runActionJuice(actionText) {
   if (/magic|spell|jaadu|जादू/.test(t)) {
     addScore(10);
     bumpCombo();
-    setArenaStatus('magic');
+    
     flashMap('rgba(182,92,255,0.14)', 220);
     emitParticles(centerX, centerY, '#d88cff', 24);
     playSfx('success');
@@ -1341,7 +1277,7 @@ function runActionJuice(actionText) {
   }
 
   addScore(5);
-  setArenaStatus('investigate');
+  
   emitParticles(centerX, centerY, '#f9c74f', 10);
   playSfx('success');
 }
@@ -1355,7 +1291,7 @@ function maybeSpawnEnemyEncounter() {
     gameplayState.enemy.x = 640 + Math.random() * 120;
     gameplayState.enemy.y = 165 + Math.random() * 60;
     gameplayState.inBattle = true;
-    setArenaStatus('encounter');
+    
     emitParticles(gameplayState.enemy.x, gameplayState.enemy.y, '#ff8d70', 18);
     updateArenaHud();
     return true;
@@ -1400,13 +1336,13 @@ function collectNearbyLoot() {
     gameplayState.resources.wood += Math.max(1, Math.floor(collected / 2));
     addScore(collected * 2);
     bumpCombo();
-    setArenaStatus('loot collected');
+    
     emitParticles(gameplayState.hero.x + 20, gameplayState.hero.y + 18, '#ffe08a', 20);
     playSfx('success');
     updateArenaHud();
     return `You scoop up ${collected} coins and salvage timber from the wreckage.`;
   }
-  setArenaStatus('no loot nearby');
+  
   return 'No loot close enough — move toward the drop first.';
 }
 
@@ -1422,7 +1358,7 @@ function buildStructure(structure) {
     gameplayState.buildings.pulseTarget = 'hut';
     addScore(18);
     bumpCombo();
-    setArenaStatus('hut built');
+    
     emitParticles(180, 110, '#9fdc9f', 18);
     updateArenaHud();
     return `A sturdy hut rises from the dust. Hut level is now ${gameplayState.buildings.hut}.`;
@@ -1439,7 +1375,7 @@ function buildStructure(structure) {
     gameplayState.buildings.pulseTarget = 'tower';
     addScore(24);
     bumpCombo();
-    setArenaStatus('tower built');
+    
     emitParticles(260, 95, '#a2c7ff', 20);
     updateArenaHud();
     return `Your watchtower gains a new floor. Tower level is now ${gameplayState.buildings.tower}.`;
@@ -1458,7 +1394,7 @@ function applyCombatMove(kind) {
 
   if (kind === 'defend') {
     addScore(5);
-    setArenaStatus('defending');
+    
     flashMap('rgba(90,150,255,0.12)', 220);
     emitParticles(gameplayState.hero.x + 26, gameplayState.hero.y + 22, '#8eb7ff', 14);
     playSfx('success');
@@ -1470,7 +1406,7 @@ function applyCombatMove(kind) {
       gameplayState.enemy.fleeingUntil = performance.now() + 900;
       gameplayState.enemy.active = false;
       gameplayState.inBattle = false;
-      setArenaStatus('enemy fled');
+      
       emitParticles(700, 180, '#bfbfbf', 18);
       playSfx('impact');
       updateArenaHud();
@@ -1492,13 +1428,13 @@ function applyCombatMove(kind) {
     gameplayState.enemy.active = false;
     gameplayState.inBattle = false;
     gameplayState.hero.jumpUntil = performance.now() + 900;
-    setArenaStatus('victory');
+    
     openLootDrop(4 + Math.floor(Math.random() * 3));
     updateArenaHud();
     return `Direct hit for ${damage}. Enemy defeated! Coins scatter across the field.`;
   }
 
-  setArenaStatus('battle');
+  
   updateArenaHud();
   return `Direct hit for ${damage}. Enemy still stands with ${Math.max(0, gameplayState.enemy.hp)} HP.`;
 }
@@ -1508,7 +1444,7 @@ function parseVoiceGameplayCommand(englishIntent, rawText) {
 
   if (/move north|go north|north|ऊपर|उत्तर/.test(normalized)) {
     moveHeroBy(0, -38);
-    setArenaStatus('exploring north');
+    
     addScore(3);
     maybeSpawnEnemyEncounter();
     updateArenaHud();
@@ -1516,7 +1452,7 @@ function parseVoiceGameplayCommand(englishIntent, rawText) {
   }
   if (/move south|go south|south|नीचे|दक्षिण/.test(normalized)) {
     moveHeroBy(0, 38);
-    setArenaStatus('exploring south');
+    
     addScore(3);
     maybeSpawnEnemyEncounter();
     updateArenaHud();
@@ -1524,7 +1460,7 @@ function parseVoiceGameplayCommand(englishIntent, rawText) {
   }
   if (/move east|go east|east|पूरब|पूर्व/.test(normalized)) {
     moveHeroBy(42, 0);
-    setArenaStatus('exploring east');
+    
     addScore(3);
     maybeSpawnEnemyEncounter();
     updateArenaHud();
@@ -1532,7 +1468,7 @@ function parseVoiceGameplayCommand(englishIntent, rawText) {
   }
   if (/move west|go west|west|पश्चिम/.test(normalized)) {
     moveHeroBy(-42, 0);
-    setArenaStatus('exploring west');
+    
     addScore(3);
     maybeSpawnEnemyEncounter();
     updateArenaHud();
@@ -1561,7 +1497,7 @@ function parseVoiceGameplayCommand(englishIntent, rawText) {
   }
 
   if (/talk|speak|dialogue|बात/.test(normalized)) {
-    setArenaStatus('dialogue');
+    
     addScore(2);
     return { handled: true, line: 'Your partner whispers: “City lights lie. Footprints do not.”', actionTag: 'talk' };
   }
@@ -1784,7 +1720,7 @@ async function generateAssetAndAddToPanel(assetPrompt) {
   }
 
   setAssetSpinner(true);
-  setArenaStatus('generating');
+  
 
   try {
     const response = await fetch('/api/gen_image', {
@@ -1806,15 +1742,15 @@ async function generateAssetAndAddToPanel(assetPrompt) {
     assetCache[cacheKey] = { url, prompt: assetPrompt, at: Date.now() };
     saveAssetCache();
     setAssetSlot(slotIndex, url, assetPrompt);
-    setArenaStatus('asset ready');
+    
     playSfx('success');
   } catch (error) {
-    logVoiceEvent('system', 'Asset generation fallback used', error.message || 'Unknown generation error');
+    
     const fallbackUrl = createFallbackAsset(assetPrompt, size);
     assetCache[cacheKey] = { url: fallbackUrl, prompt: assetPrompt, at: Date.now() };
     saveAssetCache();
     setAssetSlot(slotIndex, fallbackUrl, `${assetPrompt} (fallback)`);
-    setArenaStatus('fallback asset');
+    
     playSfx('error');
   } finally {
     setAssetSpinner(false);
@@ -1841,7 +1777,7 @@ function applyAssetSlot(index) {
     const x = Math.floor(Math.random() * (maxX + 1));
     const y = Math.floor(Math.random() * (maxY + 1));
     placedAssets.push({ image, x, y, size, prompt: asset.prompt, spawnAt: performance.now(), phase: Math.random() * 999 });
-    setArenaStatus('asset deployed');
+    
     addScore(6);
     playSfx('success');
     drawMapCanvas();
@@ -1977,7 +1913,7 @@ function startGame() {
     document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
     arenaScore = 0;
     arenaCombo = 1;
-    setArenaStatus('ready');
+    
     updateArenaHud();
     logJournal({ kind: 'scene', role: 'system', text: '--- CASE FILE OPENED ---', at: new Date().toISOString(), turn: 0 });
     initMapCanvas();
@@ -2585,7 +2521,7 @@ async function processPlayerInput(rawText, selectedLanguage) {
   document.getElementById('voice-btn').disabled = true;
   document.getElementById('voice-label').textContent = '// DETECTIVE IS THINKING...';
   document.getElementById('voice-transcript').textContent = '';
-  setArenaStatus('processing');
+  
 
   // Thinking indicator
   const thinkEl = addToScene('detective', '');
@@ -2598,29 +2534,9 @@ async function processPlayerInput(rawText, selectedLanguage) {
       addToScene('system', `English intent: ${englishIntent}`);
     }
 
-    const gameplay = parseVoiceGameplayCommand(englishIntent, rawText);
-    if (gameplay.handled) {
-      lastEnglishAction = gameplay.actionTag || englishIntent;
-      lastAssetPrompt = `${getAssetControls().size}x${getAssetControls().size} ${getAssetControls().style} sprite for ${lastEnglishAction}, transparent background, clean silhouette`;
-      runActionJuice(lastEnglishAction);
-      logVoiceEvent(rawText, lastEnglishAction, lastAssetPrompt);
-      await generateAssetAndAddToPanel(lastAssetPrompt);
+    
 
-      thinkEl.innerHTML = '';
-      await typeText(thinkEl, gameplay.line, skipDialogueMode ? 1 : 20);
-      await speakText(gameplay.line, thinkEl);
-      setArenaStatus('ready');
-      document.getElementById('voice-btn').disabled = false;
-      document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
-      return;
-    }
-
-    const actionPacket = await buildActionAssetPacket(englishIntent);
-    lastEnglishAction = actionPacket.action;
-    lastAssetPrompt = actionPacket.asset_prompt;
-    runActionJuice(lastEnglishAction);
-    logVoiceEvent(rawText, lastEnglishAction, lastAssetPrompt);
-    await generateAssetAndAddToPanel(lastAssetPrompt);
+    
 
     // Get Claude response
     const reply = await askClaude(englishIntent, rawText, effectiveLanguage);
@@ -2663,12 +2579,12 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
     // Speak the reply
     await speakText(reply, thinkEl);
-    setArenaStatus('ready');
+    
 
   } catch (err) {
     thinkEl.textContent = `⚠ Error: ${err.message}. Check server environment variables.`;
     thinkEl.style.color = 'var(--red)';
-    setArenaStatus('error');
+    
     playSfx('error');
     console.error(err);
   }
@@ -2731,7 +2647,7 @@ function resetGame() {
   document.getElementById('outcome-overlay').classList.remove('active');
   document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
   document.getElementById('voice-log-list').innerHTML = '';
-  setArenaStatus('ready');
+  
   updateArenaHud();
   initAssetSlots();
   renderSuspects();
