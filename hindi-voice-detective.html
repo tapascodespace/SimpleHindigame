@@ -764,16 +764,18 @@ Three suspects, all present at last night's palace dinner:
 2. MEERA DEVI — the Maharaja's niece, secretly engaged to a rival royal house
 3. RAJAN SETH — the palace treasurer, been skimming accounts for years
 
-You narrate the investigation like a classic noir detective. The player speaks in Hindi — you understand Hindi perfectly and respond in English in character.
-Keep responses to 2-3 short punchy sentences max. Be dramatic and atmospheric.
-The player's instruction may come translated into English from Hindi speech. Treat that translated English as exact intent.
+You narrate the investigation like a classic noir detective. Keep responses to 2-3 short punchy sentences max. Be dramatic and atmospheric.
 Maintain a continuous storyline that branches based on the player's latest choices and discoveries.
 When the player asks to investigate someone, reveal a new clue. 
 When they ask to accuse someone, evaluate if they have enough evidence.
 Track what clues have been revealed. After 3-4 clues, allow the mystery to be solved.
 Always end your response by asking what they want to do next (in 1 brief line).
 
-CRITICAL INSTRUCTION: You MUST return your response as a RAW JSON object matching this exact schema:
+CRITICAL INSTRUCTION: You MUST reply in the exact same language the user spoke in.
+- If the player speaks in Hindi, you MUST narrate/reply in Hindi in "hindi_text" and provide the English translation in "english_translation".
+- If the player speaks in English, you MUST narrate/reply in English in "english_translation" and leave "hindi_text" blank.
+
+You MUST return your response as a RAW JSON object matching this exact schema:
 {
   "header": "Level / Location Name",
   "hindi_text": "Character's spoken text in Hindi (if they speak)",
@@ -1179,7 +1181,7 @@ async function speakText(text) {
     },
     body: JSON.stringify({
       text: text,
-      model_id: 'eleven_monolingual_v1',
+      model_id: 'eleven_multilingual_v2',
       voice_settings: {
         stability: 0.65,
         similarity_boost: 0.85,
@@ -1410,7 +1412,10 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
     // Speak the reply
     if (typeof speakText === 'function') {
-      await speakText(gameData.english_translation || gameData.hindi_text);
+      const speechOutput = (effectiveLanguage === 'hindi' && gameData.hindi_text) 
+          ? gameData.hindi_text 
+          : (gameData.english_translation || gameData.hindi_text);
+      await speakText(speechOutput);
     }
     
     if (typeof promptLanguageChoice === 'function') {
