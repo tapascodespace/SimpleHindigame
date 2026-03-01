@@ -22,22 +22,23 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'prompt is required' });
     }
 
+    const targetWidth = Number.isFinite(width) && width > 0 ? width : 512;
+    const targetHeight = Number.isFinite(height) && height > 0 ? height : 512;
+
     const enhancedPrompt = `${prompt}. style: ${style}. game-ready sprite, clean silhouette, transparent background.`;
 
     // Primary provider: Runware
     if (runwareKey) {
-      const taskUuid = `asset-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
       const payload = [
         {
           taskType: 'imageInference',
-          taskUUID: taskUuid,
-          positivePrompt: enhancedPrompt,
-          width,
-          height,
-          outputType: 'URL',
-          outputFormat: 'PNG',
           numberResults: 1,
-          includeCost: false
+          width: targetWidth,
+          height: targetHeight,
+          includeCost: true,
+          outputType: ['URL'],
+          model: 'google:4@3',
+          positivePrompt: enhancedPrompt
         }
       ];
 
@@ -74,7 +75,7 @@ module.exports = async function handler(req, res) {
 
     // Guaranteed visual fallback: Pollinations (no key)
     const seed = Math.floor(Math.random() * 1000000);
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${width}&height=${height}&seed=${seed}&model=flux&nologo=true`;
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${targetWidth}&height=${targetHeight}&seed=${seed}&model=flux&nologo=true`;
     const fallbackResponse = await fetch(pollinationsUrl);
 
     if (!fallbackResponse.ok) {
