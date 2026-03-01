@@ -714,6 +714,10 @@ let awaitingLanguageChoice = false;
 let storyJournal = [];
 let recognitionNetworkRetryCount = 0;
 let lastRecognitionNetworkLogAt = 0;
+let mediaRecorder = null;
+let mediaStream = null;
+let mediaChunks = [];
+let fallbackProcessing = false;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1138,8 +1142,177 @@ async function promptLanguageChoice() {
 // ============================================================
 //  SPEECH RECOGNITION (Hindi)
 // ============================================================
+function canUseFallbackSTT() {
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+}
+
+function preferredLanguageCode() {
+  return preferredInputLanguage === 'hindi' ? 'hi' : 'en';
+}
+
+function getRecorderMimeType() {
+  const options = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'];
+  for (const mime of options) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime)) {
+      return mime;
+    }
+  }
+  return '';
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = String(reader.result || '');
+      const commaIndex = result.indexOf(',');
+      resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
+    };
+    reader.onerror = () => reject(new Error('Failed to read recorded audio.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function transcribeWithServerSTT(blob, languageCode) {
+  const audioBase64 = await blobToBase64(blob);
+  const response = await fetch('/api/stt', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      audioBase64,
+      mimeType: blob.type || 'audio/webm',
+      languageCode
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `STT API error: ${response.status}`);
+  }
+  return String(data.text || '').trim();
+}
+
+async function startFallbackRecording() {
+  if (!canUseFallbackSTT()) {
+    const transcriptEl = document.getElementById('voice-transcript');
+    transcriptEl.classList.add('error');
+    transcriptEl.textContent = 'Backup voice capture not available in this browser.';
+    return;
+  }
+  if (fallbackProcessing || (mediaRecorder && mediaRecorder.state !== 'inactive')) {
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaStream = stream;
+    const mimeType = getRecorderMimeType();
+    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    mediaChunks = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        mediaChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = async () => {
+      const chunks = mediaChunks.slice();
+      mediaChunks = [];
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+
+      const blobType = mediaRecorder?.mimeType || 'audio/webm';
+      mediaRecorder = null;
+
+      if (!chunks.length) {
+        isRecording = false;
+        document.getElementById('voice-btn').classList.remove('recording');
+        document.getElementById('voice-label').textContent = awaitingLanguageChoice ? '// WAITING FOR LANGUAGE CHOICE' : '// READY TO LISTEN';
+        const transcriptEl = document.getElementById('voice-transcript');
+        transcriptEl.classList.add('error');
+        transcriptEl.textContent = 'No audio captured. Try speaking again.';
+        return;
+      }
+
+      fallbackProcessing = true;
+      document.getElementById('voice-label').textContent = '// TRANSCRIBING...';
+      document.getElementById('voice-transcript').textContent = 'Processing voice input...';
+
+      try {
+        const blob = new Blob(chunks, { type: blobType });
+        const transcript = await transcribeWithServerSTT(blob, preferredLanguageCode());
+        if (!transcript) {
+          throw new Error('No speech detected from audio.');
+        }
+        document.getElementById('voice-transcript').classList.remove('error');
+        document.getElementById('voice-transcript').textContent = transcript;
+        recognitionNetworkRetryCount = 0;
+        await handleRecognizedSpeech(transcript);
+      } catch (error) {
+        const transcriptEl = document.getElementById('voice-transcript');
+        transcriptEl.classList.add('error');
+        transcriptEl.textContent = `STT fallback error: ${error.message}`;
+        addToScene('system', `⚠ Voice capture failed: ${error.message}`);
+      } finally {
+        fallbackProcessing = false;
+        isRecording = false;
+        document.getElementById('voice-btn').classList.remove('recording');
+        document.getElementById('voice-label').textContent = awaitingLanguageChoice ? '// WAITING FOR LANGUAGE CHOICE' : '// READY TO LISTEN';
+      }
+    };
+
+    isRecording = true;
+    document.getElementById('voice-btn').classList.add('recording');
+    document.getElementById('voice-label').textContent = awaitingLanguageChoice
+      ? '// LISTENING BACKUP STT: LANGUAGE CHOICE'
+      : `// LISTENING BACKUP STT (${preferredInputLanguage.toUpperCase()})...`;
+    document.getElementById('voice-transcript').classList.remove('error');
+    document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
+      ? 'English or Hindi?'
+      : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
+    mediaRecorder.start(250);
+  } catch (error) {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      mediaStream = null;
+    }
+    mediaRecorder = null;
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('voice-label').textContent = awaitingLanguageChoice ? '// WAITING FOR LANGUAGE CHOICE' : '// READY TO LISTEN';
+    const transcriptEl = document.getElementById('voice-transcript');
+    transcriptEl.classList.add('error');
+    transcriptEl.textContent = `Mic access failed: ${error.message}`;
+  }
+}
+
+function stopFallbackRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try {
+      mediaRecorder.stop();
+      return;
+    } catch (e) {}
+  }
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
+  }
+}
+
 function initRecognition() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    if (canUseFallbackSTT()) {
+      recognition = null;
+      document.getElementById('voice-transcript').classList.remove('error');
+      document.getElementById('voice-transcript').textContent = 'Browser recognition unavailable. Using backup STT.';
+      return;
+    }
     document.getElementById('voice-transcript').textContent = 'Speech recognition not supported. Use Chrome.';
     document.getElementById('voice-transcript').classList.add('error');
     return;
@@ -1191,6 +1364,14 @@ function initRecognition() {
         }, 700);
         return;
       } else {
+        if (canUseFallbackSTT()) {
+          transcriptEl.textContent = 'Speech recognition network issue. Switching to backup STT...';
+          stopRecording();
+          setTimeout(() => {
+            if (!isRecording) startFallbackRecording();
+          }, 300);
+          return;
+        }
         transcriptEl.textContent = 'Network issue while recognizing speech. Check internet and click mic again.';
       }
     } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
@@ -1216,7 +1397,10 @@ function toggleRecording() {
 }
 
 function startRecording(isAutoRetry = false) {
-  if (!recognition) return;
+  if (!recognition) {
+    startFallbackRecording();
+    return;
+  }
   if (!isAutoRetry) {
     recognitionNetworkRetryCount = 0;
   }
@@ -1244,11 +1428,14 @@ function startRecording(isAutoRetry = false) {
 function stopRecording() {
   isRecording = false;
   document.getElementById('voice-btn').classList.remove('recording');
-  if (awaitingLanguageChoice) {
-    document.getElementById('voice-label').textContent = '// WAITING FOR LANGUAGE CHOICE';
-  } else {
-    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+  if (!fallbackProcessing) {
+    if (awaitingLanguageChoice) {
+      document.getElementById('voice-label').textContent = '// WAITING FOR LANGUAGE CHOICE';
+    } else {
+      document.getElementById('voice-label').textContent = '// READY TO LISTEN';
+    }
   }
+  stopFallbackRecording();
   if (recognition) { try { recognition.stop(); } catch(e) {} }
 }
 
