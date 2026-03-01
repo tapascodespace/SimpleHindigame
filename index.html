@@ -728,6 +728,10 @@ let awaitingLanguageChoice = false;
 let storyJournal = [];
 let recognitionRetryCount = 0;
 const MAX_RECOGNITION_RETRIES = 1;
+let mediaRecorder = null;
+let mediaStream = null;
+let recordedChunks = [];
+let recordingMode = null;
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1168,64 +1172,166 @@ async function promptLanguageChoice() {
 //  SPEECH RECOGNITION (Hindi)
 // ============================================================
 function initRecognition() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    document.getElementById('voice-transcript').textContent = 'Speech recognition not supported. Use Chrome.';
-    document.getElementById('voice-transcript').classList.add('error');
-    return;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'hi-IN';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      recognitionRetryCount = 0;
+      document.getElementById('voice-label').textContent = '// LISTENING...';
+      document.getElementById('voice-transcript').textContent = '...';
+    };
+
+    recognition.onresult = (event) => {
+      const result = event.results[event.results.length - 1];
+      const transcript = result[0].transcript;
+      document.getElementById('voice-transcript').textContent = transcript;
+      if (result.isFinal) {
+        handleRecognizedSpeech(transcript);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Recognition error:', event.error);
+      document.getElementById('voice-transcript').classList.add('error');
+      document.getElementById('voice-transcript').textContent =
+        event.error === 'no-speech' ? 'No speech detected. Try again.' : `Fallback mic error: ${event.error}`;
+      stopRecording();
+    };
+
+    recognition.onend = () => {
+      if (recordingMode === 'speech-recognition') stopRecording();
+    };
   }
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'hi-IN';
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
-
-  recognition.onstart = () => {
-    recognitionRetryCount = 0;
-    document.getElementById('voice-label').textContent = '// LISTENING...';
-    document.getElementById('voice-transcript').textContent = '...';
-  };
-
-  recognition.onresult = (event) => {
-    const result = event.results[event.results.length - 1];
-    const transcript = result[0].transcript;
-    document.getElementById('voice-transcript').textContent = transcript;
-    if (result.isFinal) {
-      handleRecognizedSpeech(transcript);
+  if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+    if (!recognition) {
+      document.getElementById('voice-transcript').textContent = 'Microphone recording not supported on this browser.';
+      document.getElementById('voice-transcript').classList.add('error');
     }
+  }
+}
+
+function getSupportedMimeType() {
+  const preferred = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus'
+  ];
+
+  for (const mimeType of preferred) {
+    if (MediaRecorder.isTypeSupported(mimeType)) return mimeType;
+  }
+  return '';
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result || '';
+      const base64 = String(result).split(',')[1] || '';
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function transcribeAudioBlob(audioBlob, languageCode) {
+  const audioBase64 = await blobToBase64(audioBlob);
+  const response = await fetch('/api/stt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      audioBase64,
+      mimeType: audioBlob.type || 'audio/webm',
+      languageCode
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `STT error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return (data.text || '').trim();
+}
+
+async function startRecorderMode() {
+  mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  recordedChunks = [];
+
+  const mimeType = getSupportedMimeType();
+  mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+  recordingMode = 'recorder';
+
+  mediaRecorder.ondataavailable = (event) => {
+    if (event.data && event.data.size > 0) recordedChunks.push(event.data);
   };
 
-  recognition.onerror = (event) => {
-    console.error('Recognition error:', event.error);
+  mediaRecorder.onstop = async () => {
+    try {
+      document.getElementById('voice-label').textContent = '// TRANSCRIBING...';
+      document.getElementById('voice-transcript').textContent = 'Processing your speech...';
+      const blobType = mimeType || recordedChunks[0]?.type || 'audio/webm';
+      const audioBlob = new Blob(recordedChunks, { type: blobType });
+      const languageCode = awaitingLanguageChoice ? undefined : (preferredInputLanguage === 'hindi' ? 'hi' : 'en');
+      const transcript = await transcribeAudioBlob(audioBlob, languageCode);
 
-    if (event.error === 'network') {
-      const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
-      if (!online) {
-        document.getElementById('voice-transcript').textContent = 'No internet detected. Reconnect and try the mic again.';
-      } else if (recognitionRetryCount < MAX_RECOGNITION_RETRIES) {
-        recognitionRetryCount += 1;
-        document.getElementById('voice-transcript').textContent = 'Mic network glitch. Retrying once...';
-        stopRecording();
-        setTimeout(() => {
-          if (!document.getElementById('voice-btn').disabled) startRecording();
-        }, 900);
-        return;
+      if (!transcript) {
+        document.getElementById('voice-transcript').classList.add('error');
+        document.getElementById('voice-transcript').textContent = 'Could not hear clearly. Try speaking again.';
       } else {
-        document.getElementById('voice-transcript').textContent = 'Speech service network error. Use Chrome on HTTPS and try again.';
+        document.getElementById('voice-transcript').classList.remove('error');
+        document.getElementById('voice-transcript').textContent = transcript;
+        await handleRecognizedSpeech(transcript);
       }
-    } else {
-      document.getElementById('voice-transcript').textContent =
-        event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
+    } catch (error) {
+      console.error('Recorder transcription error:', error);
+      document.getElementById('voice-transcript').classList.add('error');
+      document.getElementById('voice-transcript').textContent = `Mic transcription failed: ${error.message}`;
+    } finally {
+      cleanupMediaRecorder();
+      isRecording = false;
+      document.getElementById('voice-btn').classList.remove('recording');
+      if (!document.getElementById('voice-btn').disabled) {
+        document.getElementById('voice-label').textContent = awaitingLanguageChoice
+          ? '// WAITING FOR LANGUAGE CHOICE'
+          : '// READY TO LISTEN';
+      }
     }
-
-    document.getElementById('voice-transcript').classList.add('error');
-    stopRecording();
   };
 
-  recognition.onend = () => {
-    stopRecording();
-  };
+  mediaRecorder.start();
+}
+
+function cleanupMediaRecorder() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+  }
+  mediaStream = null;
+  mediaRecorder = null;
+  recordedChunks = [];
+  if (recordingMode === 'recorder') recordingMode = null;
+}
+
+function fallbackToSpeechRecognition() {
+  if (!recognition) return false;
+  recordingMode = 'speech-recognition';
+  try {
+    recognition.start();
+    return true;
+  } catch (error) {
+    console.error('Fallback recognition start error:', error);
+    return false;
+  }
 }
 
 function toggleRecording() {
@@ -1237,8 +1343,6 @@ function toggleRecording() {
 }
 
 function startRecording() {
-  if (!recognition) return;
-
   const isSecureLocal = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
   if (!isSecureLocal) {
     document.getElementById('voice-transcript').classList.add('error');
@@ -1257,17 +1361,26 @@ function startRecording() {
     ? 'English or Hindi?'
     : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
 
-  try {
-    recognition.start();
-  } catch (error) {
-    console.error('Recognition start error:', error);
+  if (navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined') {
+    startRecorderMode().catch((error) => {
+      console.error('Recorder mode error:', error);
+      if (fallbackToSpeechRecognition()) return;
+      document.getElementById('voice-transcript').classList.add('error');
+      document.getElementById('voice-transcript').textContent = `Microphone unavailable: ${error.message}`;
+      stopRecording();
+    });
+    return;
+  }
+
+  if (!fallbackToSpeechRecognition()) {
     document.getElementById('voice-transcript').classList.add('error');
-    document.getElementById('voice-transcript').textContent = 'Mic is busy. Wait a second and tap again.';
+    document.getElementById('voice-transcript').textContent = 'No supported microphone input path on this browser.';
     stopRecording();
   }
 }
 
 function stopRecording() {
+  const activeMode = recordingMode;
   isRecording = false;
   document.getElementById('voice-btn').classList.remove('recording');
   if (awaitingLanguageChoice) {
@@ -1275,7 +1388,15 @@ function stopRecording() {
   } else {
     document.getElementById('voice-label').textContent = '// READY TO LISTEN';
   }
+
+  if (activeMode === 'recorder' && mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try { mediaRecorder.stop(); } catch(e) {}
+    return;
+  }
+
   if (recognition) { try { recognition.stop(); } catch(e) {} }
+  if (activeMode === 'recorder') cleanupMediaRecorder();
+  recordingMode = null;
 }
 
 function setRecognitionLanguage(lang) {

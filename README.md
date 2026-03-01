@@ -30,6 +30,7 @@ Open:
 
 - `POST /api/claude` → Claude text response
 - `POST /api/tts` → ElevenLabs audio stream
+- `POST /api/stt` → ElevenLabs speech-to-text transcription
 - `GET /api/health` → health check
 
 ## Notes
