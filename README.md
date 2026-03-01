@@ -21,6 +21,7 @@ A single-page noir detective game with:
    - `MISTRAL_MODEL` (default: `mistral-large-latest` when using Mistral API)
    - `POLLY_VOICE_ID` (default: `Aditi`)
    - `ELEVENLABS_API_KEY` (currently used by `/api/stt` route for robust speech-to-text)
+  - `RUNWARE_API_KEY` (used by `/api/gen_image` for asset generation panel)
 4. Deploy.
 
 If your Bedrock model runs in a different region than Polly, use:
@@ -45,6 +46,7 @@ For full serverless route testing, use `vercel dev` after logging in.
 - `POST /api/claude` → Mistral text response (Mistral API first, Bedrock fallback; route name kept for compatibility)
 - `POST /api/tts` → Amazon Polly MP3 audio stream
 - `POST /api/stt` → ElevenLabs speech-to-text transcription
+- `POST /api/gen_image` → Runware image generation proxy (PNG thumbnails)
 - `GET /api/health` → health check
 
 ## Notes

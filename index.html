@@ -307,6 +307,34 @@
     margin-bottom: 4px;
   }
 
+  .voice-log-wrap {
+    margin-top: 18px;
+    border-top: 1px solid #2a1f0a;
+    padding-top: 12px;
+  }
+
+  .voice-log-list {
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .voice-log-item {
+    background: #1a1209;
+    border: 1px solid #2a1f0a;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-mid);
+  }
+
+  .voice-log-item strong {
+    color: var(--text-bright);
+    font-weight: 700;
+  }
+
   @keyframes slide-in {
     from { opacity: 0; transform: translateX(-10px); }
     to { opacity: 1; transform: translateX(0); }
@@ -325,9 +353,42 @@
   .story-scene {
     flex: 1;
     overflow-y: auto;
-    padding: 32px;
+    padding: 20px 24px;
     scrollbar-width: thin;
     scrollbar-color: var(--sepia) transparent;
+  }
+
+  .map-wrap {
+    padding: 18px 24px 0;
+    border-bottom: 1px solid #1a1209;
+  }
+
+  .map-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .map-btn {
+    background: #1a1209;
+    color: var(--sepia-light);
+    border: 1px solid var(--sepia);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+  }
+
+  .map-btn:hover { box-shadow: var(--glow); }
+
+  #map-canvas {
+    width: 100%;
+    height: 220px;
+    background: radial-gradient(circle at 40% 30%, #1a1209, #0b0703);
+    border: 1px solid #2a1f0a;
+    image-rendering: pixelated;
+    display: block;
   }
 
   .scene-entry {
@@ -462,6 +523,77 @@
 
   .guilt-fill.high { background: var(--red); }
 
+  .asset-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .asset-controls select {
+    background: #1a1209;
+    color: var(--text-bright);
+    border: 1px solid #2a1f0a;
+    padding: 6px;
+    font-size: 11px;
+    font-family: var(--font-ui);
+  }
+
+  .asset-spinner {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--text-mid);
+    font-family: var(--font-ui);
+  }
+
+  .asset-spinner.active { display: flex; }
+
+  .spinner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sepia-light);
+    animation: pulse-red 1s infinite;
+  }
+
+  .asset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .asset-slot {
+    background: #1a1209;
+    border: 1px solid #2a1f0a;
+    padding: 6px;
+  }
+
+  .asset-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #0f0904;
+    border: 1px dashed #3a2d12;
+    object-fit: contain;
+    display: block;
+  }
+
+  .asset-apply {
+    margin-top: 6px;
+    width: 100%;
+    background: #120d06;
+    color: var(--sepia-light);
+    border: 1px solid var(--sepia);
+    padding: 5px;
+    font-size: 10px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+  }
+
+  .asset-apply:disabled { opacity: 0.4; cursor: not-allowed; }
+
   /* FOOTER — Voice Control */
   .game-footer {
     grid-area: footer;
@@ -536,6 +668,24 @@
     color: #4a3820;
     text-align: right;
     line-height: 1.6;
+  }
+
+  .long-mode-toggle {
+    background: #1a1209;
+    color: var(--sepia-light);
+    border: 1px solid var(--sepia);
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .long-mode-toggle.active {
+    border-color: var(--green);
+    color: #a9f5a9;
+    box-shadow: 0 0 14px rgba(74, 230, 74, 0.2);
   }
 
   /* ======= LOADING / THINKING ======= */
@@ -618,7 +768,8 @@
       grid-template-areas: "header" "story" "clues" "footer";
     }
     .evidence-panel { display: none; }
-    .clues-panel { max-height: 180px; }
+    .clues-panel { max-height: 260px; }
+    #map-canvas { height: 160px; }
   }
 </style>
 </head>
@@ -666,19 +817,66 @@
         A jeweled pendant — the Star of Jaipur — has vanished from the Maharaja's locked vault.
       </div>
     </div>
+    <div class="voice-log-wrap">
+      <div class="panel-header">// VOICE LOG</div>
+      <div class="voice-log-list" id="voice-log-list"></div>
+    </div>
   </aside>
 
   <!-- Story Center -->
   <main class="story-panel">
+    <div class="map-wrap">
+      <div class="map-toolbar">
+        <button class="map-btn" onclick="generateAssetFromLastCommand()">Generate asset from last command</button>
+        <button class="map-btn" onclick="useFallbackKenney()">Use fallback (Kenney)</button>
+      </div>
+      <canvas id="map-canvas" width="900" height="300"></canvas>
+    </div>
     <div class="story-scene" id="story-scene"></div>
     <div class="wave-container" id="wave-container">
       <!-- wave bars injected by JS -->
     </div>
   </main>
 
-  <!-- Suspects Panel -->
+  <!-- Generative Assets Panel -->
   <aside class="clues-panel">
-    <div class="panel-header">// SUSPECTS</div>
+    <div class="panel-header">// GENERATIVE ASSETS</div>
+    <div class="asset-controls">
+      <select id="style-select">
+        <option value="pixel">Pixel</option>
+        <option value="flat">Flat</option>
+        <option value="cartoon">Cartoon</option>
+        <option value="noir">Noir</option>
+      </select>
+      <select id="size-select">
+        <option value="64">64</option>
+        <option value="128" selected>128</option>
+        <option value="256">256</option>
+      </select>
+    </div>
+    <div class="asset-spinner" id="asset-spinner">
+      <div class="spinner-dot"></div>
+      Generating asset...
+    </div>
+    <div class="asset-grid" id="asset-grid">
+      <div class="asset-slot">
+        <img class="asset-thumb" id="asset-thumb-0" alt="Generated asset 1">
+        <button class="asset-apply" id="asset-apply-0" onclick="applyAssetSlot(0)" disabled>Apply</button>
+      </div>
+      <div class="asset-slot">
+        <img class="asset-thumb" id="asset-thumb-1" alt="Generated asset 2">
+        <button class="asset-apply" id="asset-apply-1" onclick="applyAssetSlot(1)" disabled>Apply</button>
+      </div>
+      <div class="asset-slot">
+        <img class="asset-thumb" id="asset-thumb-2" alt="Generated asset 3">
+        <button class="asset-apply" id="asset-apply-2" onclick="applyAssetSlot(2)" disabled>Apply</button>
+      </div>
+      <div class="asset-slot">
+        <img class="asset-thumb" id="asset-thumb-3" alt="Generated asset 4">
+        <button class="asset-apply" id="asset-apply-3" onclick="applyAssetSlot(3)" disabled>Apply</button>
+      </div>
+    </div>
+    <div class="panel-header" style="margin-top:18px;">// SUSPECTS</div>
     <div id="suspects-list"></div>
   </aside>
 
@@ -693,13 +891,14 @@
       </svg>
     </button>
     <div class="voice-status">
-      <div class="voice-status-label" id="voice-label">// READY: CHOOSE LANGUAGE EACH TURN</div>
-      <div class="voice-transcript" id="voice-transcript">The detective will ask: English or Hindi?</div>
+      <div class="voice-status-label" id="voice-label">// READY: AUTO LANGUAGE DETECT</div>
+      <div class="voice-transcript" id="voice-transcript">Speak in Hindi, English, or Hinglish...</div>
     </div>
     <div class="voice-hint">
       Detective speaks in English<br>
-      <span style="color:#2a1f0a">You can answer in English or Hindi</span>
+      <span style="color:#2a1f0a">Auto-detect voice input + asset generation</span>
     </div>
+    <button class="long-mode-toggle" id="long-mode-toggle" onclick="toggleLongMode()">LONG MODE: OFF</button>
   </footer>
 
 </div>
@@ -732,6 +931,14 @@ let mediaRecorder = null;
 let mediaStream = null;
 let recordedChunks = [];
 let recordingMode = null;
+let longNarrationMode = false;
+let lastEnglishAction = '';
+let lastAssetPrompt = '';
+let generatedAssets = Array.from({ length: 4 }, () => ({ url: '', prompt: '' }));
+let nextAssetSlot = 0;
+let mapCanvas = null;
+let mapCtx = null;
+let placedAssets = [];
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -774,6 +981,211 @@ const SUSPECTS = [
 let evidenceCount = 1;
 
 loadJournal();
+
+function toggleLongMode() {
+  longNarrationMode = !longNarrationMode;
+  const btn = document.getElementById('long-mode-toggle');
+  if (!btn) return;
+  btn.classList.toggle('active', longNarrationMode);
+  btn.textContent = `LONG MODE: ${longNarrationMode ? 'ON' : 'OFF'}`;
+}
+
+function initMapCanvas() {
+  mapCanvas = document.getElementById('map-canvas');
+  if (!mapCanvas) return;
+  mapCtx = mapCanvas.getContext('2d');
+  drawMapCanvas();
+}
+
+function drawMapCanvas() {
+  if (!mapCtx || !mapCanvas) return;
+  mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  mapCtx.fillStyle = '#0b0703';
+  mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+  mapCtx.strokeStyle = 'rgba(196,154,42,0.12)';
+  mapCtx.lineWidth = 1;
+  for (let x = 0; x < mapCanvas.width; x += 32) {
+    mapCtx.beginPath();
+    mapCtx.moveTo(x, 0);
+    mapCtx.lineTo(x, mapCanvas.height);
+    mapCtx.stroke();
+  }
+  for (let y = 0; y < mapCanvas.height; y += 32) {
+    mapCtx.beginPath();
+    mapCtx.moveTo(0, y);
+    mapCtx.lineTo(mapCanvas.width, y);
+    mapCtx.stroke();
+  }
+
+  for (const token of placedAssets) {
+    if (token.image && token.image.complete) {
+      mapCtx.drawImage(token.image, token.x, token.y, token.size, token.size);
+    }
+  }
+}
+
+function initAssetSlots() {
+  for (let i = 0; i < 4; i++) {
+    const thumb = document.getElementById(`asset-thumb-${i}`);
+    const applyBtn = document.getElementById(`asset-apply-${i}`);
+    if (thumb) thumb.src = '';
+    if (applyBtn) applyBtn.disabled = true;
+  }
+}
+
+function setAssetSpinner(active) {
+  const spinner = document.getElementById('asset-spinner');
+  if (!spinner) return;
+  spinner.classList.toggle('active', active);
+}
+
+function getAssetControls() {
+  const style = document.getElementById('style-select')?.value || 'pixel';
+  const size = Number(document.getElementById('size-select')?.value || 128);
+  return { style, size };
+}
+
+function createFallbackAsset(prompt, size = 128) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1a1209';
+  ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = '#c49a2a';
+  ctx.lineWidth = Math.max(2, size / 32);
+  ctx.strokeRect(4, 4, size - 8, size - 8);
+  ctx.fillStyle = '#f8f2de';
+  ctx.font = `${Math.max(12, size / 6)}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const label = (prompt || 'ASSET').slice(0, 12).toUpperCase();
+  ctx.fillText(label, size / 2, size / 2);
+  return canvas.toDataURL('image/png');
+}
+
+function setAssetSlot(index, url, prompt) {
+  generatedAssets[index] = { url, prompt };
+  const thumb = document.getElementById(`asset-thumb-${index}`);
+  const applyBtn = document.getElementById(`asset-apply-${index}`);
+  if (thumb) {
+    thumb.src = url;
+    thumb.title = prompt;
+  }
+  if (applyBtn) {
+    applyBtn.disabled = !url;
+  }
+}
+
+async function generateAssetAndAddToPanel(assetPrompt) {
+  if (!assetPrompt) return;
+  const { style, size } = getAssetControls();
+  const slotIndex = nextAssetSlot % 4;
+  nextAssetSlot += 1;
+  setAssetSpinner(true);
+
+  try {
+    const response = await fetch('/api/gen_image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: assetPrompt, width: size, height: size, style })
+    });
+
+    if (!response.ok) {
+      throw new Error('Generation API unavailable');
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setAssetSlot(slotIndex, url, assetPrompt);
+  } catch (error) {
+    const fallbackUrl = createFallbackAsset(assetPrompt, size);
+    setAssetSlot(slotIndex, fallbackUrl, `${assetPrompt} (fallback)`);
+  } finally {
+    setAssetSpinner(false);
+  }
+}
+
+function applyAssetSlot(index) {
+  if (!mapCanvas || !mapCtx) return;
+  const asset = generatedAssets[index];
+  if (!asset?.url) return;
+
+  const size = Number(document.getElementById('size-select')?.value || 128);
+  const image = new Image();
+  image.onload = () => {
+    const maxX = Math.max(0, mapCanvas.width - size - 8);
+    const maxY = Math.max(0, mapCanvas.height - size - 8);
+    const x = Math.floor(Math.random() * (maxX + 1));
+    const y = Math.floor(Math.random() * (maxY + 1));
+    placedAssets.push({ image, x, y, size, prompt: asset.prompt });
+    drawMapCanvas();
+  };
+  image.src = asset.url;
+}
+
+async function generateAssetFromLastCommand() {
+  const prompt = lastAssetPrompt || (lastEnglishAction ? `${lastEnglishAction}, transparent background, noir style` : 'detective clue icon, noir style, transparent background');
+  await generateAssetAndAddToPanel(prompt);
+}
+
+async function useFallbackKenney() {
+  const { size } = getAssetControls();
+  const slotIndex = nextAssetSlot % 4;
+  nextAssetSlot += 1;
+  const fallback = createFallbackAsset('KENNEY', size);
+  setAssetSlot(slotIndex, fallback, 'Kenney-style fallback asset');
+}
+
+function logVoiceEvent(recognizedText, englishAction, assetPrompt) {
+  const log = document.getElementById('voice-log-list');
+  if (!log) return;
+  const item = document.createElement('div');
+  item.className = 'voice-log-item';
+  item.innerHTML = `<div><strong>Voice:</strong> ${escapeHtml(recognizedText || '')}</div>
+    <div><strong>Action:</strong> ${escapeHtml(englishAction || '')}</div>
+    <div><strong>Asset:</strong> ${escapeHtml(assetPrompt || '')}</div>`;
+  log.prepend(item);
+}
+
+function extractFirstJsonObject(text) {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+}
+
+async function buildActionAssetPacket(englishIntent) {
+  const { style, size } = getAssetControls();
+  const system = `You are an asset-prompt-builder for a game.
+Return only valid JSON with keys action and asset_prompt.
+action: one short English action phrase.
+asset_prompt: one short image prompt for game sprite generation.
+Always include style, transparent background, and requested size.`;
+
+  const userMessage = `User command: ${englishIntent}\nStyle: ${style}\nSize: ${size}`;
+
+  try {
+    const raw = await callClaude(system, [{ role: 'user', content: userMessage }], 180);
+    const parsed = extractFirstJsonObject(raw);
+    if (parsed?.action && parsed?.asset_prompt) {
+      return {
+        action: String(parsed.action),
+        asset_prompt: String(parsed.asset_prompt)
+      };
+    }
+  } catch (e) {}
+
+  return {
+    action: englishIntent,
+    asset_prompt: `${size}x${size} ${style} game asset, ${englishIntent}, transparent background`
+  };
+}
 
 // ============================================================
 //  RAIN ANIMATION
@@ -838,8 +1250,10 @@ function startGame() {
   setTimeout(() => {
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('game-screen').classList.add('active');
-    document.getElementById('header-lang').textContent = 'INPUT: HINDI';
+    document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
     logJournal({ kind: 'scene', role: 'system', text: '--- CASE FILE OPENED ---', at: new Date().toISOString(), turn: 0 });
+    initMapCanvas();
+    initAssetSlots();
     initRecognition();
     renderSuspects();
     openingMonologue();
@@ -1039,7 +1453,10 @@ async function askClaude(englishIntent, rawInput, inputLanguage) {
     content: `[Input language: ${inputLanguage}] Raw: ${rawInput}\nIntent in English: ${englishIntent}`
   });
 
-  const reply = await callClaude(CASE_SCENARIO, conversationHistory, 320);
+  const systemPrompt = longNarrationMode
+    ? `${CASE_SCENARIO}\nLong mode is ON. Use richer narrative continuity and 5-7 concise cinematic sentences.`
+    : `${CASE_SCENARIO}\nLong mode is OFF. Keep to 2-3 short punchy sentences.`;
+  const reply = await callClaude(systemPrompt, conversationHistory, longNarrationMode ? 700 : 320);
   conversationHistory.push({ role: 'assistant', content: reply });
   return reply;
 }
@@ -1151,21 +1568,12 @@ async function openingMonologue() {
 
   try {
     await speakText(opening, el);
-    await promptLanguageChoice();
+    document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
+    document.getElementById('voice-transcript').textContent = 'Speak in Hindi, English, or Hinglish...';
   } catch(e) {
     console.error('TTS error:', e);
     addToScene('system', `⚠ Voice playback failed: ${e.message || 'Unknown TTS error'}`);
   }
-}
-
-async function promptLanguageChoice() {
-  awaitingLanguageChoice = true;
-  if (recognition) recognition.lang = 'en-US';
-  document.getElementById('voice-label').textContent = '// LANGUAGE CHECK: ENGLISH OR HINDI';
-  document.getElementById('voice-transcript').textContent = 'Say: English or Hindi';
-  const prompt = 'Do you want to respond in English or Hindi? Say English or Hindi.';
-  const promptEl = addToScene('system', prompt);
-  await speakText(prompt, promptEl);
 }
 
 // ============================================================
@@ -1282,7 +1690,7 @@ async function startRecorderMode() {
       document.getElementById('voice-transcript').textContent = 'Processing your speech...';
       const blobType = mimeType || recordedChunks[0]?.type || 'audio/webm';
       const audioBlob = new Blob(recordedChunks, { type: blobType });
-      const languageCode = awaitingLanguageChoice ? undefined : (preferredInputLanguage === 'hindi' ? 'hi' : 'en');
+      const languageCode = undefined;
       const transcript = await transcribeAudioBlob(audioBlob, languageCode);
 
       if (!transcript) {
@@ -1302,9 +1710,7 @@ async function startRecorderMode() {
       isRecording = false;
       document.getElementById('voice-btn').classList.remove('recording');
       if (!document.getElementById('voice-btn').disabled) {
-        document.getElementById('voice-label').textContent = awaitingLanguageChoice
-          ? '// WAITING FOR LANGUAGE CHOICE'
-          : '// READY TO LISTEN';
+        document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
       }
     }
   };
@@ -1352,14 +1758,9 @@ function startRecording() {
 
   isRecording = true;
   document.getElementById('voice-btn').classList.add('recording');
-  const modeLabel = awaitingLanguageChoice
-    ? '// LISTENING: LANGUAGE CHOICE'
-    : `// LISTENING IN ${preferredInputLanguage.toUpperCase()}...`;
-  document.getElementById('voice-label').textContent = modeLabel;
+  document.getElementById('voice-label').textContent = '// LISTENING: AUTO LANGUAGE DETECT';
   document.getElementById('voice-transcript').classList.remove('error');
-  document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
-    ? 'English or Hindi?'
-    : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
+  document.getElementById('voice-transcript').textContent = 'Speak naturally (Hindi / English / Hinglish)...';
 
   if (navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined') {
     startRecorderMode().catch((error) => {
@@ -1383,11 +1784,7 @@ function stopRecording() {
   const activeMode = recordingMode;
   isRecording = false;
   document.getElementById('voice-btn').classList.remove('recording');
-  if (awaitingLanguageChoice) {
-    document.getElementById('voice-label').textContent = '// WAITING FOR LANGUAGE CHOICE';
-  } else {
-    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
-  }
+  document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
 
   if (activeMode === 'recorder' && mediaRecorder && mediaRecorder.state !== 'inactive') {
     try { mediaRecorder.stop(); } catch(e) {}
@@ -1399,57 +1796,24 @@ function stopRecording() {
   recordingMode = null;
 }
 
-function setRecognitionLanguage(lang) {
-  if (!recognition) return;
-  recognition.lang = lang === 'english' ? 'en-US' : 'hi-IN';
-}
-
-function detectLanguageChoice(text) {
-  const normalized = text.toLowerCase();
-  const wantsEnglish = /english|englis|inglish|अंग्रेज|इंग्लिश|एंग्लिश/.test(normalized);
-  const wantsHindi = /hindi|hindee|hind|हिंदी|हिन्दी/.test(normalized);
-  if (wantsEnglish) return 'english';
-  if (wantsHindi) return 'hindi';
-  return null;
-}
-
 function isLikelyHindi(text) {
   return /[\u0900-\u097F]/.test(text);
 }
 
+function detectInputLanguage(text) {
+  const hasDevanagari = /[\u0900-\u097F]/.test(text);
+  const hasLatin = /[A-Za-z]/.test(text);
+  if (hasDevanagari && hasLatin) return 'mixed';
+  if (hasDevanagari) return 'hindi';
+  return 'english';
+}
+
 async function handleRecognizedSpeech(transcript) {
-  if (awaitingLanguageChoice) {
-    let selected = detectLanguageChoice(transcript);
-    if (!selected && transcript.trim()) {
-      selected = isLikelyHindi(transcript) ? 'hindi' : 'english';
-      addToScene('system', `Auto-selected ${selected.toUpperCase()} from your speech.`);
-      preferredInputLanguage = selected;
-      awaitingLanguageChoice = false;
-      setRecognitionLanguage(selected);
-      document.getElementById('header-lang').textContent = `INPUT: ${selected.toUpperCase()}`;
-      document.getElementById('voice-label').textContent = `// PROCESSING ${selected.toUpperCase()} INPUT`;
-      await processPlayerInput(transcript, selected);
-      return;
-    }
-
-    if (!selected) {
-      addToScene('system', 'Could not detect language choice. Please say English or Hindi.');
-      document.getElementById('voice-label').textContent = '// SAY: ENGLISH OR HINDI';
-      document.getElementById('voice-transcript').textContent = 'Please say English or Hindi';
-      return;
-    }
-
-    preferredInputLanguage = selected;
-    awaitingLanguageChoice = false;
-    setRecognitionLanguage(selected);
-    document.getElementById('header-lang').textContent = `INPUT: ${selected.toUpperCase()}`;
-    addToScene('system', `Language set to ${selected.toUpperCase()}. Give your command now.`);
-    document.getElementById('voice-label').textContent = `// READY IN ${selected.toUpperCase()}`;
-    document.getElementById('voice-transcript').textContent = selected === 'hindi' ? 'अब अपना आदेश दीजिए।' : 'Now give your command.';
-    return;
-  }
-
-  await processPlayerInput(transcript, preferredInputLanguage);
+  if (!transcript.trim()) return;
+  const detectedLanguage = detectInputLanguage(transcript);
+  preferredInputLanguage = detectedLanguage;
+  document.getElementById('header-lang').textContent = `INPUT: AUTO (${detectedLanguage.toUpperCase()})`;
+  await processPlayerInput(transcript, detectedLanguage);
 }
 
 // ============================================================
@@ -1457,7 +1821,7 @@ async function handleRecognizedSpeech(transcript) {
 // ============================================================
 async function processPlayerInput(rawText, selectedLanguage) {
   if (!rawText.trim()) return;
-  const effectiveLanguage = isLikelyHindi(rawText) ? 'hindi' : selectedLanguage;
+  const effectiveLanguage = detectInputLanguage(rawText);
 
   // Show what player said
   addToScene('player', rawText, effectiveLanguage === 'hindi' ? 'hindi' : '');
@@ -1474,10 +1838,16 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
   try {
     let englishIntent = rawText;
-    if (effectiveLanguage === 'hindi') {
-      englishIntent = await translateToEnglish(rawText, 'Hindi');
+    if (effectiveLanguage === 'hindi' || effectiveLanguage === 'mixed') {
+      englishIntent = await translateToEnglish(rawText, effectiveLanguage === 'mixed' ? 'Hindi-English mixed' : 'Hindi');
       addToScene('system', `English intent: ${englishIntent}`);
     }
+
+    const actionPacket = await buildActionAssetPacket(englishIntent);
+    lastEnglishAction = actionPacket.action;
+    lastAssetPrompt = actionPacket.asset_prompt;
+    logVoiceEvent(rawText, lastEnglishAction, lastAssetPrompt);
+    await generateAssetAndAddToPanel(lastAssetPrompt);
 
     // Get Claude response
     const reply = await askClaude(englishIntent, rawText, effectiveLanguage);
@@ -1520,7 +1890,6 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
     // Speak the reply
     await speakText(reply, thinkEl);
-    await promptLanguageChoice();
 
   } catch (err) {
     thinkEl.textContent = `⚠ Error: ${err.message}. Check server environment variables.`;
@@ -1529,9 +1898,7 @@ async function processPlayerInput(rawText, selectedLanguage) {
   }
 
   document.getElementById('voice-btn').disabled = false;
-  if (!awaitingLanguageChoice) {
-    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
-  }
+  document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
 }
 
 function updateSuspectsFromContext(reply, hindi) {
@@ -1563,6 +1930,10 @@ function resetGame() {
   evidenceCount = 1;
   awaitingLanguageChoice = false;
   preferredInputLanguage = 'hindi';
+  lastEnglishAction = '';
+  lastAssetPrompt = '';
+  placedAssets = [];
+  generatedAssets = Array.from({ length: 4 }, () => ({ url: '', prompt: '' }));
   SUSPECTS.forEach(s => { s.guilt = 0; s.status = 'suspect'; });
 
   document.getElementById('story-scene').innerHTML = '';
@@ -1573,7 +1944,10 @@ function resetGame() {
     </div>
   `;
   document.getElementById('outcome-overlay').classList.remove('active');
-  document.getElementById('header-lang').textContent = 'INPUT: HINDI';
+  document.getElementById('header-lang').textContent = 'INPUT: AUTO DETECT';
+  document.getElementById('voice-log-list').innerHTML = '';
+  initAssetSlots();
+  drawMapCanvas();
   renderSuspects();
   logJournal({ kind: 'scene', role: 'system', text: '--- NEW CASE STARTED ---', at: new Date().toISOString(), turn: 0 });
   openingMonologue();
