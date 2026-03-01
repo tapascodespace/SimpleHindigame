@@ -909,6 +909,8 @@
         <div class="hud-pill" id="hud-score">Score: 0</div>
         <div class="hud-pill" id="hud-combo">Combo: x1</div>
         <div class="hud-pill" id="hud-status">Status: ready</div>
+        <div class="hud-pill" id="hud-resource">Coins: 0 | Wood: 0</div>
+        <div class="hud-pill" id="hud-enemy">Enemy HP: --</div>
       </div>
       <div class="map-toolbar">
         <button class="map-btn" onclick="generateAssetFromLastCommand()">Generate asset from last command</button>
@@ -1049,6 +1051,15 @@ let comboTimeout = null;
 let arenaParticles = [];
 let mapFlash = null;
 let audioCtx = null;
+const gameplayState = {
+  hero: { x: 120, y: 210, tx: 120, ty: 210, jumpUntil: 0 },
+  enemy: { active: false, x: 680, y: 190, hp: 0, maxHp: 0, fleeingUntil: 0 },
+  loot: [],
+  buildings: { hut: 0, tower: 0, pulseUntil: 0, pulseTarget: '' },
+  resources: { coins: 0, wood: 0 },
+  areaIndex: 1,
+  inBattle: false
+};
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
 const JOURNAL_KEY = 'voice_detective_story_journal_v1';
@@ -1167,9 +1178,13 @@ function updateArenaHud() {
   const scoreEl = document.getElementById('hud-score');
   const comboEl = document.getElementById('hud-combo');
   const statusEl = document.getElementById('hud-status');
+  const resourceEl = document.getElementById('hud-resource');
+  const enemyEl = document.getElementById('hud-enemy');
   if (scoreEl) scoreEl.textContent = `Score: ${arenaScore}`;
   if (comboEl) comboEl.textContent = `Combo: x${arenaCombo}`;
   if (statusEl) statusEl.textContent = `Status: ${arenaStatus}`;
+  if (resourceEl) resourceEl.textContent = `Coins: ${gameplayState.resources.coins} | Wood: ${gameplayState.resources.wood}`;
+  if (enemyEl) enemyEl.textContent = gameplayState.enemy.active ? `Enemy HP: ${Math.max(0, gameplayState.enemy.hp)}` : 'Enemy HP: --';
 }
 
 function setArenaStatus(text) {
@@ -1331,6 +1346,229 @@ function runActionJuice(actionText) {
   playSfx('success');
 }
 
+function maybeSpawnEnemyEncounter() {
+  if (gameplayState.enemy.active) return false;
+  if (Math.random() < 0.45) {
+    gameplayState.enemy.active = true;
+    gameplayState.enemy.maxHp = 42 + Math.floor(Math.random() * 18);
+    gameplayState.enemy.hp = gameplayState.enemy.maxHp;
+    gameplayState.enemy.x = 640 + Math.random() * 120;
+    gameplayState.enemy.y = 165 + Math.random() * 60;
+    gameplayState.inBattle = true;
+    setArenaStatus('encounter');
+    emitParticles(gameplayState.enemy.x, gameplayState.enemy.y, '#ff8d70', 18);
+    updateArenaHud();
+    return true;
+  }
+  return false;
+}
+
+function moveHeroBy(dx, dy) {
+  const nx = Math.max(40, Math.min(mapCanvas.width - 90, gameplayState.hero.tx + dx));
+  const ny = Math.max(90, Math.min(mapCanvas.height - 70, gameplayState.hero.ty + dy));
+  gameplayState.hero.tx = nx;
+  gameplayState.hero.ty = ny;
+}
+
+function openLootDrop(amount = 3) {
+  for (let i = 0; i < amount; i++) {
+    gameplayState.loot.push({
+      x: 420 + Math.random() * 160,
+      y: 160 + Math.random() * 110,
+      value: 2 + Math.floor(Math.random() * 4),
+      born: performance.now()
+    });
+  }
+  emitParticles(500, 200, '#ffd15c', 20);
+}
+
+function collectNearbyLoot() {
+  let collected = 0;
+  const hx = gameplayState.hero.x + 18;
+  const hy = gameplayState.hero.y + 28;
+  gameplayState.loot = gameplayState.loot.filter(l => {
+    const d = Math.hypot(l.x - hx, l.y - hy);
+    if (d < 220) {
+      collected += l.value;
+      return false;
+    }
+    return true;
+  });
+
+  if (collected > 0) {
+    gameplayState.resources.coins += collected;
+    gameplayState.resources.wood += Math.max(1, Math.floor(collected / 2));
+    addScore(collected * 2);
+    bumpCombo();
+    setArenaStatus('loot collected');
+    emitParticles(gameplayState.hero.x + 20, gameplayState.hero.y + 18, '#ffe08a', 20);
+    playSfx('success');
+    updateArenaHud();
+    return `You scoop up ${collected} coins and salvage timber from the wreckage.`;
+  }
+  setArenaStatus('no loot nearby');
+  return 'No loot close enough — move toward the drop first.';
+}
+
+function buildStructure(structure) {
+  if (structure === 'hut') {
+    if (gameplayState.resources.coins < 8 || gameplayState.resources.wood < 4) {
+      return 'Not enough resources to build a hut. You need 8 coins and 4 wood.';
+    }
+    gameplayState.resources.coins -= 8;
+    gameplayState.resources.wood -= 4;
+    gameplayState.buildings.hut += 1;
+    gameplayState.buildings.pulseUntil = performance.now() + 900;
+    gameplayState.buildings.pulseTarget = 'hut';
+    addScore(18);
+    bumpCombo();
+    setArenaStatus('hut built');
+    emitParticles(180, 110, '#9fdc9f', 18);
+    updateArenaHud();
+    return `A sturdy hut rises from the dust. Hut level is now ${gameplayState.buildings.hut}.`;
+  }
+
+  if (structure === 'tower') {
+    if (gameplayState.resources.coins < 12 || gameplayState.resources.wood < 7) {
+      return 'Not enough resources to build a tower. You need 12 coins and 7 wood.';
+    }
+    gameplayState.resources.coins -= 12;
+    gameplayState.resources.wood -= 7;
+    gameplayState.buildings.tower += 1;
+    gameplayState.buildings.pulseUntil = performance.now() + 1000;
+    gameplayState.buildings.pulseTarget = 'tower';
+    addScore(24);
+    bumpCombo();
+    setArenaStatus('tower built');
+    emitParticles(260, 95, '#a2c7ff', 20);
+    updateArenaHud();
+    return `Your watchtower gains a new floor. Tower level is now ${gameplayState.buildings.tower}.`;
+  }
+
+  return 'Unknown structure. Try “build hut” or “build tower”.';
+}
+
+function applyCombatMove(kind) {
+  if (!gameplayState.enemy.active) {
+    maybeSpawnEnemyEncounter();
+    if (!gameplayState.enemy.active) {
+      return 'You swing into empty air. No enemy in sight — keep exploring.';
+    }
+  }
+
+  if (kind === 'defend') {
+    addScore(5);
+    setArenaStatus('defending');
+    flashMap('rgba(90,150,255,0.12)', 220);
+    emitParticles(gameplayState.hero.x + 26, gameplayState.hero.y + 22, '#8eb7ff', 14);
+    playSfx('success');
+    return 'Shield up. You brace for impact and hold the line.';
+  }
+
+  if (kind === 'flee') {
+    if (gameplayState.enemy.active) {
+      gameplayState.enemy.fleeingUntil = performance.now() + 900;
+      gameplayState.enemy.active = false;
+      gameplayState.inBattle = false;
+      setArenaStatus('enemy fled');
+      emitParticles(700, 180, '#bfbfbf', 18);
+      playSfx('impact');
+      updateArenaHud();
+      return 'The enemy panics and bolts in a cloud of dust.';
+    }
+    return 'No active enemy to flee from.';
+  }
+
+  const damage = 12 + Math.floor(Math.random() * 9);
+  gameplayState.enemy.hp -= damage;
+  triggerScreenShake();
+  flashMap('rgba(220,60,40,0.15)', 180);
+  emitParticles(gameplayState.enemy.x + 10, gameplayState.enemy.y + 16, '#ff8a66', 20);
+  playSfx('impact');
+  addScore(damage);
+  bumpCombo();
+
+  if (gameplayState.enemy.hp <= 0) {
+    gameplayState.enemy.active = false;
+    gameplayState.inBattle = false;
+    gameplayState.hero.jumpUntil = performance.now() + 900;
+    setArenaStatus('victory');
+    openLootDrop(4 + Math.floor(Math.random() * 3));
+    updateArenaHud();
+    return `Direct hit for ${damage}. Enemy defeated! Coins scatter across the field.`;
+  }
+
+  setArenaStatus('battle');
+  updateArenaHud();
+  return `Direct hit for ${damage}. Enemy still stands with ${Math.max(0, gameplayState.enemy.hp)} HP.`;
+}
+
+function parseVoiceGameplayCommand(englishIntent, rawText) {
+  const normalized = `${String(englishIntent || '')} ${String(rawText || '')}`.toLowerCase();
+
+  if (/move north|go north|north|ऊपर|उत्तर/.test(normalized)) {
+    moveHeroBy(0, -38);
+    setArenaStatus('exploring north');
+    addScore(3);
+    maybeSpawnEnemyEncounter();
+    updateArenaHud();
+    return { handled: true, line: 'You march north through torchlit corridors.', actionTag: 'move north' };
+  }
+  if (/move south|go south|south|नीचे|दक्षिण/.test(normalized)) {
+    moveHeroBy(0, 38);
+    setArenaStatus('exploring south');
+    addScore(3);
+    maybeSpawnEnemyEncounter();
+    updateArenaHud();
+    return { handled: true, line: 'You head south, boots echoing over wet stone.', actionTag: 'move south' };
+  }
+  if (/move east|go east|east|पूरब|पूर्व/.test(normalized)) {
+    moveHeroBy(42, 0);
+    setArenaStatus('exploring east');
+    addScore(3);
+    maybeSpawnEnemyEncounter();
+    updateArenaHud();
+    return { handled: true, line: 'You slip east and scan the shadows.', actionTag: 'move east' };
+  }
+  if (/move west|go west|west|पश्चिम/.test(normalized)) {
+    moveHeroBy(-42, 0);
+    setArenaStatus('exploring west');
+    addScore(3);
+    maybeSpawnEnemyEncounter();
+    updateArenaHud();
+    return { handled: true, line: 'You drift west, watching every window.', actionTag: 'move west' };
+  }
+
+  if (/attack|strike|slash|hit|aakraman|आक्रमण|हमला/.test(normalized)) {
+    return { handled: true, line: applyCombatMove('attack'), actionTag: 'attack' };
+  }
+  if (/defend|block|shield|raksha|रक्षा/.test(normalized)) {
+    return { handled: true, line: applyCombatMove('defend'), actionTag: 'defend' };
+  }
+  if (/run away|flee|retreat|भागो|bhago/.test(normalized)) {
+    return { handled: true, line: applyCombatMove('flee'), actionTag: 'flee' };
+  }
+
+  if (/loot|collect|pickup|khazana|खजाना|सिक्के/.test(normalized)) {
+    return { handled: true, line: collectNearbyLoot(), actionTag: 'loot' };
+  }
+
+  if (/upgrade tower|build tower|tower/.test(normalized)) {
+    return { handled: true, line: buildStructure('tower'), actionTag: 'build tower' };
+  }
+  if (/build hut|hut|घर|झोपड़ी/.test(normalized)) {
+    return { handled: true, line: buildStructure('hut'), actionTag: 'build hut' };
+  }
+
+  if (/talk|speak|dialogue|बात/.test(normalized)) {
+    setArenaStatus('dialogue');
+    addScore(2);
+    return { handled: true, line: 'Your partner whispers: “City lights lie. Footprints do not.”', actionTag: 'talk' };
+  }
+
+  return { handled: false };
+}
+
 function initMapCanvas() {
   mapCanvas = document.getElementById('map-canvas');
   if (!mapCanvas) return;
@@ -1348,6 +1586,9 @@ function initMapCanvas() {
 function drawMapCanvas() {
   if (!mapCtx || !mapCanvas) return;
   const now = performance.now();
+
+  gameplayState.hero.x += (gameplayState.hero.tx - gameplayState.hero.x) * 0.12;
+  gameplayState.hero.y += (gameplayState.hero.ty - gameplayState.hero.y) * 0.12;
   mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
   mapCtx.fillStyle = '#0b0703';
   mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
@@ -1383,6 +1624,69 @@ function drawMapCanvas() {
       mapCtx.drawImage(token.image, token.x + offset, token.y + offset + bob, drawSize, drawSize);
     }
   }
+
+  // Buildings (simple cartoony blocks)
+  if (gameplayState.buildings.hut > 0) {
+    const pulse = gameplayState.buildings.pulseTarget === 'hut' && gameplayState.buildings.pulseUntil > now ? 1.08 : 1;
+    const w = 64 * pulse;
+    const h = 48 * pulse;
+    mapCtx.fillStyle = '#6e4d2a';
+    mapCtx.fillRect(110 - (w - 64) / 2, 70 - (h - 48) / 2, w, h);
+    mapCtx.fillStyle = '#a8713b';
+    mapCtx.fillRect(105 - (w - 64) / 2, 64 - (h - 48) / 2, w + 10, 10);
+    mapCtx.fillStyle = '#f8e1a2';
+    mapCtx.font = '10px Inter';
+    mapCtx.fillText(`Hut Lv.${gameplayState.buildings.hut}`, 104, 130);
+  }
+
+  if (gameplayState.buildings.tower > 0) {
+    const pulse = gameplayState.buildings.pulseTarget === 'tower' && gameplayState.buildings.pulseUntil > now ? 1.08 : 1;
+    const h = (56 + gameplayState.buildings.tower * 9) * pulse;
+    mapCtx.fillStyle = '#5b5f79';
+    mapCtx.fillRect(220, 120 - (h - 56), 44, h);
+    mapCtx.fillStyle = '#9ca6d0';
+    mapCtx.fillRect(214, 114 - (h - 56), 56, 10);
+    mapCtx.fillStyle = '#cfd8ff';
+    mapCtx.font = '10px Inter';
+    mapCtx.fillText(`Tower Lv.${gameplayState.buildings.tower}`, 204, 136);
+  }
+
+  // Loot on ground
+  for (const loot of gameplayState.loot) {
+    const shimmer = 1 + Math.sin((now + loot.born) / 180) * 0.2;
+    mapCtx.fillStyle = '#ffd35f';
+    mapCtx.beginPath();
+    mapCtx.arc(loot.x, loot.y, 5 * shimmer, 0, Math.PI * 2);
+    mapCtx.fill();
+  }
+
+  // Enemy
+  if (gameplayState.enemy.active) {
+    const bounce = Math.sin(now / 180) * 2;
+    mapCtx.fillStyle = '#b53e36';
+    mapCtx.fillRect(gameplayState.enemy.x, gameplayState.enemy.y + bounce, 34, 34);
+    mapCtx.fillStyle = '#ffe1db';
+    mapCtx.fillRect(gameplayState.enemy.x + 7, gameplayState.enemy.y + 9 + bounce, 6, 6);
+    mapCtx.fillRect(gameplayState.enemy.x + 21, gameplayState.enemy.y + 9 + bounce, 6, 6);
+    mapCtx.fillStyle = '#2b0d0b';
+    mapCtx.fillRect(gameplayState.enemy.x + 10, gameplayState.enemy.y + 22 + bounce, 14, 3);
+  } else if (gameplayState.enemy.fleeingUntil > now) {
+    const t = (gameplayState.enemy.fleeingUntil - now) / 900;
+    mapCtx.fillStyle = `rgba(191,191,191,${Math.max(0, t)})`;
+    mapCtx.beginPath();
+    mapCtx.arc(700 + (1 - t) * 80, 190, 12 * t, 0, Math.PI * 2);
+    mapCtx.fill();
+  }
+
+  // Hero
+  const heroJump = gameplayState.hero.jumpUntil > now ? Math.sin((now / 120)) * 8 : 0;
+  mapCtx.fillStyle = '#2c8ad6';
+  mapCtx.fillRect(gameplayState.hero.x, gameplayState.hero.y - heroJump, 36, 36);
+  mapCtx.fillStyle = '#e7f3ff';
+  mapCtx.fillRect(gameplayState.hero.x + 8, gameplayState.hero.y + 8 - heroJump, 6, 6);
+  mapCtx.fillRect(gameplayState.hero.x + 22, gameplayState.hero.y + 8 - heroJump, 6, 6);
+  mapCtx.fillStyle = '#0f3154';
+  mapCtx.fillRect(gameplayState.hero.x + 10, gameplayState.hero.y + 23 - heroJump, 14, 3);
 
   if (mapFlash && mapFlash.until > now) {
     mapCtx.fillStyle = mapFlash.color;
@@ -2294,6 +2598,23 @@ async function processPlayerInput(rawText, selectedLanguage) {
       addToScene('system', `English intent: ${englishIntent}`);
     }
 
+    const gameplay = parseVoiceGameplayCommand(englishIntent, rawText);
+    if (gameplay.handled) {
+      lastEnglishAction = gameplay.actionTag || englishIntent;
+      lastAssetPrompt = `${getAssetControls().size}x${getAssetControls().size} ${getAssetControls().style} sprite for ${lastEnglishAction}, transparent background, clean silhouette`;
+      runActionJuice(lastEnglishAction);
+      logVoiceEvent(rawText, lastEnglishAction, lastAssetPrompt);
+      await generateAssetAndAddToPanel(lastAssetPrompt);
+
+      thinkEl.innerHTML = '';
+      await typeText(thinkEl, gameplay.line, skipDialogueMode ? 1 : 20);
+      await speakText(gameplay.line, thinkEl);
+      setArenaStatus('ready');
+      document.getElementById('voice-btn').disabled = false;
+      document.getElementById('voice-label').textContent = '// READY: AUTO LANGUAGE DETECT';
+      return;
+    }
+
     const actionPacket = await buildActionAssetPacket(englishIntent);
     lastEnglishAction = actionPacket.action;
     lastAssetPrompt = actionPacket.asset_prompt;
@@ -2389,6 +2710,13 @@ function resetGame() {
   lastAssetPrompt = '';
   arenaScore = 0;
   arenaCombo = 1;
+  gameplayState.hero = { x: 120, y: 210, tx: 120, ty: 210, jumpUntil: 0 };
+  gameplayState.enemy = { active: false, x: 680, y: 190, hp: 0, maxHp: 0, fleeingUntil: 0 };
+  gameplayState.loot = [];
+  gameplayState.buildings = { hut: 0, tower: 0, pulseUntil: 0, pulseTarget: '' };
+  gameplayState.resources = { coins: 0, wood: 0 };
+  gameplayState.inBattle = false;
+  gameplayState.areaIndex = 1;
   placedAssets = [];
   generatedAssets = Array.from({ length: 4 }, () => ({ url: '', prompt: '' }));
   SUSPECTS.forEach(s => { s.guilt = 0; s.status = 'suspect'; });
