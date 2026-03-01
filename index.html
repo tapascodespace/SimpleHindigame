@@ -369,6 +369,17 @@
   }
   @keyframes blink { 50% { opacity: 0; } }
 
+  .spoken-word {
+    transition: background-color 0.12s ease, color 0.12s ease;
+    border-radius: 3px;
+    padding: 0 1px;
+  }
+
+  .spoken-word.active {
+    background: rgba(196,154,42,0.22);
+    color: var(--paper);
+  }
+
   /* Speaking waveform */
   .wave-container {
     display: none;
@@ -619,7 +630,7 @@
     <button class="start-btn" onclick="startGame()">▶ OPEN CASE FILE</button>
     <div class="setup-hint">
       No client-side API keys required.<br>
-      Speak in <strong>Hindi or English</strong> — the detective responds in English.
+      Speak in <strong>Hindi or English</strong> — the detective replies in the same language.
     </div>
   </div>
 </div>
@@ -636,7 +647,7 @@
     <div class="header-case" id="case-title">THE MAHARAJA'S MISSING JEWEL</div>
     <div class="header-actions">
       <button class="journal-btn" onclick="openStoryJournal()">OPEN JOURNAL</button>
-      <div class="header-lang" id="header-lang">INPUT: HINDI</div>
+      <div class="header-lang" id="header-lang">INPUT: AUTO</div>
     </div>
   </header>
 
@@ -676,12 +687,12 @@
       </svg>
     </button>
     <div class="voice-status">
-      <div class="voice-status-label" id="voice-label">// READY: CHOOSE LANGUAGE EACH TURN</div>
-      <div class="voice-transcript" id="voice-transcript">The detective will ask: English or Hindi?</div>
+      <div class="voice-status-label" id="voice-label">// READY TO LISTEN (AUTO LANGUAGE)</div>
+      <div class="voice-transcript" id="voice-transcript">Speak naturally in Hindi or English.</div>
     </div>
     <div class="voice-hint">
-      Detective speaks in English<br>
-      <span style="color:#2a1f0a">You can answer in English or Hindi</span>
+      Detective replies in same language<br>
+      <span style="color:#2a1f0a">Speak naturally in English or Hindi</span>
     </div>
   </footer>
 
@@ -707,7 +718,6 @@ let audioQueue = [];
 let isPlaying = false;
 let turnCount = 0;
 let preferredInputLanguage = 'hindi';
-let awaitingLanguageChoice = false;
 let storyJournal = [];
 
 const VOICE_ID = 'ErXwobaYiN019PkySvjV'; // Antoni — deep, noir detective voice
@@ -817,7 +827,7 @@ function startGame() {
   setTimeout(() => {
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('game-screen').classList.add('active');
-    document.getElementById('header-lang').textContent = 'INPUT: HINDI';
+    document.getElementById('header-lang').textContent = 'INPUT: AUTO';
     logJournal({ kind: 'scene', role: 'system', text: '--- CASE FILE OPENED ---', at: new Date().toISOString(), turn: 0 });
     initRecognition();
     renderSuspects();
@@ -981,18 +991,23 @@ ${entries || '<div class="empty">No entries yet. Start the investigation first.<
 //  CLAUDE API
 // ============================================================
 async function callClaude(systemPrompt, messages, maxTokens = 300) {
-  const response = await fetch('/api/claude', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages
-    })
-  });
+  let response;
+  try {
+    response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages
+      })
+    });
+  } catch (e) {
+    throw new Error('Network issue while reaching AI service. Check internet/server and try again.');
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -1030,24 +1045,88 @@ Return only the translated English sentence.`;
 // ============================================================
 //  ELEVENLABS TTS
 // ============================================================
-async function speakText(text) {
-  const response = await fetch('/api/tts', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      voiceId: VOICE_ID,
-      text: text,
-      model_id: 'eleven_multilingual_v2',
-      voice_settings: {
-        stability: 0.65,
-        similarity_boost: 0.85,
-        style: 0.3,
-        use_speaker_boost: true
+function toSafeTokensWithSpaces(text) {
+  const parts = String(text || '').split(/(\s+)/);
+  return parts.map((part) => ({
+    text: part,
+    isWord: /\S/.test(part)
+  }));
+}
+
+function renderSpeechHighlight(element, text, activeWordIndex) {
+  if (!element) return;
+  const tokens = toSafeTokensWithSpaces(text);
+  let seenWordIndex = 0;
+  element.innerHTML = tokens.map((token) => {
+    if (!token.isWord) return token.text;
+    const escaped = escapeHtml(token.text);
+    const isActive = seenWordIndex === activeWordIndex;
+    seenWordIndex += 1;
+    return `<span class="spoken-word${isActive ? ' active' : ''}">${escaped}</span>`;
+  }).join('');
+}
+
+function highlightWordsDuringAudio(audio, text, textElement) {
+  if (!audio || !textElement || !text || !text.trim()) return () => {};
+  const words = String(text).trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return () => {};
+
+  let timerId = null;
+  let wordIndex = -1;
+
+  const clear = () => {
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+    textElement.textContent = text;
+  };
+
+  const start = () => {
+    const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
+      ? audio.duration * 1000
+      : words.length * 260;
+    const step = Math.max(90, Math.floor(durationMs / words.length));
+
+    timerId = setInterval(() => {
+      wordIndex += 1;
+      if (wordIndex >= words.length) {
+        clear();
+        return;
       }
-    })
-  });
+      renderSpeechHighlight(textElement, text, wordIndex);
+    }, step);
+  };
+
+  if (audio.readyState >= 1) start();
+  else audio.addEventListener('loadedmetadata', start, { once: true });
+
+  return clear;
+}
+
+async function speakText(text, targetTextElement = null) {
+  let response;
+  try {
+    response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        voiceId: VOICE_ID,
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.65,
+          similarity_boost: 0.85,
+          style: 0.3,
+          use_speaker_boost: true
+        }
+      })
+    });
+  } catch (e) {
+    throw new Error('Network issue while reaching voice service. Check internet/server and retry.');
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -1060,13 +1139,27 @@ async function speakText(text) {
   return new Promise((resolve) => {
     const wave = document.getElementById('wave-container');
     wave.classList.add('active');
-    audio.play();
+    const cleanupHighlight = highlightWordsDuringAudio(audio, text, targetTextElement);
+
+    audio.play().catch(() => {
+      cleanupHighlight();
+      wave.classList.remove('active');
+      URL.revokeObjectURL(url);
+      resolve();
+    });
+
     audio.onended = () => {
+      cleanupHighlight();
       wave.classList.remove('active');
       URL.revokeObjectURL(url);
       resolve();
     };
-    audio.onerror = () => { wave.classList.remove('active'); resolve(); };
+    audio.onerror = () => {
+      cleanupHighlight();
+      wave.classList.remove('active');
+      URL.revokeObjectURL(url);
+      resolve();
+    };
   });
 }
 
@@ -1081,26 +1174,17 @@ async function openingMonologue() {
   turnCount++;
 
   try {
-    await speakText(opening);
-    await promptLanguageChoice();
+    await speakText(opening, el);
+    document.getElementById('voice-label').textContent = '// READY TO LISTEN (AUTO LANGUAGE)';
+    document.getElementById('voice-transcript').textContent = 'Speak naturally in Hindi or English.';
   } catch(e) {
     console.error('TTS error:', e);
-    addToScene('system', '⚠ Voice playback failed. Check server API configuration.');
+    addToScene('system', `⚠ ${e.message}`);
   }
 }
 
-async function promptLanguageChoice() {
-  awaitingLanguageChoice = true;
-  if (recognition) recognition.lang = 'en-IN';
-  document.getElementById('voice-label').textContent = '// LANGUAGE CHECK: ENGLISH OR HINDI';
-  document.getElementById('voice-transcript').textContent = 'Say: English or Hindi';
-  const prompt = 'Do you want to respond in English or Hindi? Say English or Hindi.';
-  addToScene('system', prompt);
-  await speakText(prompt);
-}
-
 // ============================================================
-//  SPEECH RECOGNITION (Hindi)
+//  SPEECH RECOGNITION (Auto Hindi/English)
 // ============================================================
 function initRecognition() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -1111,7 +1195,7 @@ function initRecognition() {
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SpeechRecognition();
-  recognition.lang = 'hi-IN';
+  recognition.lang = 'en-IN';
   recognition.continuous = false;
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
@@ -1132,9 +1216,20 @@ function initRecognition() {
 
   recognition.onerror = (event) => {
     console.error('Recognition error:', event.error);
-    document.getElementById('voice-transcript').textContent = 
-      event.error === 'no-speech' ? 'No speech detected. Try again.' : `Error: ${event.error}`;
-    document.getElementById('voice-transcript').classList.add('error');
+    const transcriptEl = document.getElementById('voice-transcript');
+    transcriptEl.classList.add('error');
+
+    if (event.error === 'no-speech') {
+      transcriptEl.textContent = 'No speech detected. Try again.';
+    } else if (event.error === 'network') {
+      transcriptEl.textContent = 'Network issue while recognizing speech. Check internet and click mic again.';
+      addToScene('system', '⚠ Speech recognition network issue. Retrying usually works once connection stabilizes.');
+    } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      transcriptEl.textContent = 'Mic permission denied. Allow microphone access in browser settings.';
+    } else {
+      transcriptEl.textContent = `Speech error: ${event.error}`;
+    }
+
     stopRecording();
   };
 
@@ -1155,25 +1250,17 @@ function startRecording() {
   if (!recognition) return;
   isRecording = true;
   document.getElementById('voice-btn').classList.add('recording');
-  const modeLabel = awaitingLanguageChoice
-    ? '// LISTENING: LANGUAGE CHOICE'
-    : `// LISTENING IN ${preferredInputLanguage.toUpperCase()}...`;
+  const modeLabel = `// LISTENING (${preferredInputLanguage.toUpperCase()})...`;
   document.getElementById('voice-label').textContent = modeLabel;
   document.getElementById('voice-transcript').classList.remove('error');
-  document.getElementById('voice-transcript').textContent = awaitingLanguageChoice
-    ? 'English or Hindi?'
-    : (preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...');
+  document.getElementById('voice-transcript').textContent = preferredInputLanguage === 'hindi' ? 'बोलिए...' : 'Speak now...';
   recognition.start();
 }
 
 function stopRecording() {
   isRecording = false;
   document.getElementById('voice-btn').classList.remove('recording');
-  if (awaitingLanguageChoice) {
-    document.getElementById('voice-label').textContent = '// WAITING FOR LANGUAGE CHOICE';
-  } else {
-    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
-  }
+  document.getElementById('voice-label').textContent = '// READY TO LISTEN';
   if (recognition) { try { recognition.stop(); } catch(e) {} }
 }
 
@@ -1182,40 +1269,25 @@ function setRecognitionLanguage(lang) {
   recognition.lang = lang === 'english' ? 'en-US' : 'hi-IN';
 }
 
-function detectLanguageChoice(text) {
-  const normalized = text.toLowerCase();
-  const wantsEnglish = /english|inglish|अंग्रेज|इंग्लिश/.test(normalized);
-  const wantsHindi = /hindi|hindee|हिंदी|हिन्दी/.test(normalized);
-  if (wantsEnglish) return 'english';
-  if (wantsHindi) return 'hindi';
-  return null;
-}
-
 function isLikelyHindi(text) {
   return /[\u0900-\u097F]/.test(text);
 }
 
-async function handleRecognizedSpeech(transcript) {
-  if (awaitingLanguageChoice) {
-    const selected = detectLanguageChoice(transcript);
-    if (!selected) {
-      addToScene('system', 'Could not detect language choice. Please say English or Hindi.');
-      document.getElementById('voice-label').textContent = '// SAY: ENGLISH OR HINDI';
-      document.getElementById('voice-transcript').textContent = 'Please say English or Hindi';
-      return;
-    }
-
-    preferredInputLanguage = selected;
-    awaitingLanguageChoice = false;
-    setRecognitionLanguage(selected);
-    document.getElementById('header-lang').textContent = `INPUT: ${selected.toUpperCase()}`;
-    addToScene('system', `Language set to ${selected.toUpperCase()}. Give your command now.`);
-    document.getElementById('voice-label').textContent = `// READY IN ${selected.toUpperCase()}`;
-    document.getElementById('voice-transcript').textContent = selected === 'hindi' ? 'अब अपना आदेश दीजिए।' : 'Now give your command.';
-    return;
+function detectInputLanguage(text) {
+  if (isLikelyHindi(text)) return 'hindi';
+  const normalized = String(text || '').toLowerCase();
+  if (/\b(kya|kyun|kaise|mera|mujhe|hai|haan|nahi|kripya|zarur|ji)\b/.test(normalized)) {
+    return 'hindi';
   }
+  return 'english';
+}
 
-  await processPlayerInput(transcript, preferredInputLanguage);
+async function handleRecognizedSpeech(transcript) {
+  const detectedLanguage = detectInputLanguage(transcript);
+  preferredInputLanguage = detectedLanguage;
+  setRecognitionLanguage(detectedLanguage);
+  document.getElementById('header-lang').textContent = `INPUT: ${detectedLanguage.toUpperCase()} (AUTO)`;
+  await processPlayerInput(transcript, detectedLanguage);
 }
 
 // ============================================================
@@ -1223,7 +1295,7 @@ async function handleRecognizedSpeech(transcript) {
 // ============================================================
 async function processPlayerInput(rawText, selectedLanguage) {
   if (!rawText.trim()) return;
-  const effectiveLanguage = isLikelyHindi(rawText) ? 'hindi' : selectedLanguage;
+  const effectiveLanguage = detectInputLanguage(rawText) || selectedLanguage || 'english';
 
   // Show what player said
   addToScene('player', rawText, effectiveLanguage === 'hindi' ? 'hindi' : '');
@@ -1286,20 +1358,17 @@ async function processPlayerInput(rawText, selectedLanguage) {
 
     // Speak the reply
     if (typeof speakText === 'function') {
-      await speakText(reply);
+      await speakText(reply, thinkEl);
     }
-    await promptLanguageChoice();
 
   } catch (err) {
-    thinkEl.textContent = `⚠ Error: ${err.message}. Check your API keys.`;
+    thinkEl.textContent = `⚠ ${err.message}`;
     thinkEl.style.color = 'var(--red)';
     console.error(err);
   }
 
   document.getElementById('voice-btn').disabled = false;
-  if (!awaitingLanguageChoice) {
-    document.getElementById('voice-label').textContent = '// READY TO LISTEN';
-  }
+  document.getElementById('voice-label').textContent = '// READY TO LISTEN';
 }
 
 function updateSuspectsFromContext(reply, hindi) {
@@ -1329,7 +1398,6 @@ function resetGame() {
   conversationHistory = [];
   turnCount = 0;
   evidenceCount = 1;
-  awaitingLanguageChoice = false;
   preferredInputLanguage = 'hindi';
   SUSPECTS.forEach(s => { s.guilt = 0; s.status = 'suspect'; });
 
@@ -1341,7 +1409,7 @@ function resetGame() {
     </div>
   `;
   document.getElementById('outcome-overlay').classList.remove('active');
-  document.getElementById('header-lang').textContent = 'INPUT: HINDI';
+  document.getElementById('header-lang').textContent = 'INPUT: AUTO';
   renderSuspects();
   logJournal({ kind: 'scene', role: 'system', text: '--- NEW CASE STARTED ---', at: new Date().toISOString(), turn: 0 });
   openingMonologue();
