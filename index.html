@@ -1093,13 +1093,18 @@ async function generateAssetAndAddToPanel(assetPrompt) {
     });
 
     if (!response.ok) {
-      throw new Error('Generation API unavailable');
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Generation API unavailable');
     }
 
     const blob = await response.blob();
+    if (!blob || blob.size < 128) {
+      throw new Error('Generated image was empty or too small');
+    }
     const url = URL.createObjectURL(blob);
     setAssetSlot(slotIndex, url, assetPrompt);
   } catch (error) {
+    logVoiceEvent('system', 'Asset generation fallback used', error.message || 'Unknown generation error');
     const fallbackUrl = createFallbackAsset(assetPrompt, size);
     setAssetSlot(slotIndex, fallbackUrl, `${assetPrompt} (fallback)`);
   } finally {
